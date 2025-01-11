@@ -1,15 +1,15 @@
 import { Router, Request, Response } from "express";
-import { userModel } from "../model/user.schema";
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { SECRET_USER_PASSWORD } from "../config";
 import { authMiddleware } from "../middlewares/auth.middleware";
+import { prisma } from "../db";
 
 const userRoute = Router();
 
 // SIGNUP
 userRoute.post("/signup", async (req: Request, res: Response) => {
-  const { username, password, firstName, lastName } = req.body;
+  const { email, password } = req.body;
 
   /**
    * TODO : add validations for inputs
@@ -18,10 +18,14 @@ userRoute.post("/signup", async (req: Request, res: Response) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const isUserExsist = await userModel.findOne({ username });
+  const isUserExsist = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
 
   if (isUserExsist) {
-    res.status(403).json({
+    res.status(409).json({
       msg: "user already exsists",
       data: isUserExsist,
       successful: false,
@@ -30,11 +34,11 @@ userRoute.post("/signup", async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await userModel.create({
-      username,
-      password: hashedPassword, // storing hashed password
-      firstName,
-      lastName,
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash: hashedPassword,
+      },
     });
 
     res.status(200).json({
@@ -43,7 +47,7 @@ userRoute.post("/signup", async (req: Request, res: Response) => {
       data: user,
     });
   } catch (e) {
-    console.error("Error during user signup:", e); // Optional logging
+    console.error("Error during user signup:", e);
     res.status(500).json({
       message: "Internal server error. Please try again later.",
       successful: false,
@@ -58,10 +62,12 @@ userRoute.post("/signin", async (req: Request, res: Response) => {
    * TODO : improve errors
    */
 
-  const { username, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const isUser = await userModel.findOne({
-      username,
+    const isUser = await prisma.user.findFirst({
+      where: {
+        email,
+      },
     });
 
     if (!isUser) {
@@ -74,7 +80,7 @@ userRoute.post("/signin", async (req: Request, res: Response) => {
 
     console.log("isUser", isUser);
 
-    const isMatch = await bcrypt.compare(password, isUser.password);
+    const isMatch = await bcrypt.compare(password, isUser.passwordHash);
 
     console.log("isMatch", isMatch);
 
@@ -85,7 +91,7 @@ userRoute.post("/signin", async (req: Request, res: Response) => {
       });
       return;
     }
-    const jwt_token = jwt.sign({ id: isUser._id }, SECRET_USER_PASSWORD);
+    const jwt_token = jwt.sign({ id: isUser.id }, SECRET_USER_PASSWORD);
 
     console.log("jwt_token", jwt_token);
 
