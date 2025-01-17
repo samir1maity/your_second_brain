@@ -6,11 +6,11 @@ interface UserData {
 }
 
 interface ScrapedData {
-  title: string;
-  description: string;
-  ogTitle: string;
-  ogDescription: string;
-  ogImage: string;
+  title?: string;
+  description?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
 }
 
 interface FormattedResult {
@@ -19,7 +19,7 @@ interface FormattedResult {
 
 export function formatDataForEmbedding(
   userData: UserData,
-  scrapedData: ScrapedData
+  scrapedData: ScrapedData = {}
 ): FormattedResult {
   const cleanText = (text: string): string => {
     console.log("reached to the clean text");
