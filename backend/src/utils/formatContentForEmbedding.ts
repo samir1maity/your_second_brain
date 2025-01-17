@@ -1,7 +1,7 @@
 interface UserData {
   link: string;
   title?: string;
-  summary?: string;
+  contentText?: string;
   tags?: string[];
 }
 
@@ -42,7 +42,7 @@ export function formatDataForEmbedding(
 
   // 2. Process descriptions - combine user description and scraped descriptions
   const descriptions: string[] = [
-    userData.summary,
+    userData.contentText,
     scrapedData.ogDescription,
     scrapedData.description,
   ]

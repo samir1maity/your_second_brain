@@ -1,25 +1,32 @@
 import axios from "axios";
 import { Request, Response } from "express";
 import { load } from "cheerio";
-import { formatDataForEmbedding } from "../utils/formatContentForEmbedding";
+import { formatDataForEmbedding } from "../utils/formatContentForEmbedding.js";
+import { pipeline } from "@xenova/transformers";
+import { prisma } from "../db.js";
 
-const userData = {
-  link: "https://example.com/artificial-intelligence",
-  title: "My AI Resource",
-  tags: ["AI", "machine-learning", "tech"],
+const generateEmbeddings = await pipeline(
+  "feature-extraction",
+  "Xenova/all-MiniLM-L6-v2"
+);
+
+const getEmbedding = async (text: string) => {
+  const output1 = await generateEmbeddings(text, {
+    pooling: "mean",
+    normalize: true,
+  });
+
+  return Array.from(output1.data);
 };
 
-const scrapedData = {
-  title: "Understanding AI - Complete Guide",
-  description: "Comprehensive guide to artificial intelligence...",
-  ogTitle: "AI Guide 2024",
-  ogDescription: "Learn everything about AI...",
-  ogImage: "https://example.com/ai-image.jpg",
-};
+function formatArrayForVector(arr: number[]): string {
+  return `[${arr.join(",")}]`;
+}
 
 export const post = async (req: Request, res: Response) => {
+  console.log('request reached')
   try {
-    const { url, title, summary, tags } = req.body;
+    const { url, title, contentText, tags } = req.body;
     // scraping
     const response = await axios.get(url);
     const html = response.data;
@@ -35,8 +42,36 @@ export const post = async (req: Request, res: Response) => {
       ogImage: $('meta[property="og:image"]').attr("content") || "",
     };
 
-   const formattedData = await formatDataForEmbedding(req.body, metadata);
-   console.log('formattedData', formattedData)
+    const formattedData = formatDataForEmbedding(req.body, metadata);
+
+    //  console.log('formattedData', formattedData)
+
+    const temp = await getEmbedding(formattedData.formattedData);
+    const data = formatArrayForVector(temp);
+
+    console.log("data", data);
+
+    const result = await prisma.$executeRaw`
+    INSERT INTO "Content" (
+      "id", 
+      "userId", 
+      "createdAt", 
+      "updatedAt", 
+      "isArchived"
+    ) 
+    VALUES (
+      gen_random_uuid(),              -- Automatically generate UUID
+      '2e058585-8136-4d30-a385-fd737c2a0476',  -- Replace with a valid userId
+      NOW(),                         -- Automatically set current timestamp for createdAt
+      NOW(),                         -- Automatically set current timestamp for updatedAt
+      false                          -- Set isArchived to false
+    );
+  `;
+  
+  console.log('Result:', result);
+  
+
+    console.log("result", result);
   } catch (error) {}
 };
 
