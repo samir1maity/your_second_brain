@@ -91,7 +91,7 @@ userRoute.post("/signin", async (req: Request, res: Response) => {
       });
       return;
     }
-    const jwt_token = jwt.sign({ id: isUser.id }, SECRET_USER_PASSWORD);
+    const jwt_token = jwt.sign({ id: isUser.id , email: isUser.email}, SECRET_USER_PASSWORD);
 
     console.log("jwt_token", jwt_token);
 

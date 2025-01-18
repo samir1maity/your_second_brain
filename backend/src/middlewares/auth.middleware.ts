@@ -12,7 +12,12 @@ export const authMiddleware = (
 
   if (decode) {
     //@ts-ignore
-    req.userId = decode.id;
+    req.user = {
+    //@ts-ignore
+      id: decode.id ,
+    //@ts-ignore
+      email: decode.email 
+    };
     next()
   } else {
     res.status(403).json({

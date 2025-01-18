@@ -108,6 +108,7 @@ export const getOne = async (id: string, user: any) => {
       select: {
         id: true,
         userId: true,
+        url: true,
         title: true,
         contentText: true,
         createdAt: true,
