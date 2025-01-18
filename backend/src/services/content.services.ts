@@ -1,17 +1,19 @@
 import axios from "axios";
-import { Request, Response } from "express";
 import { load } from "cheerio";
 import { formatDataForEmbedding } from "../utils/formatContentForEmbedding.js";
 import { prisma } from "../db.js";
 import { getEmbedding } from "../utils/generateEmbeddings.js";
 import { formatArrayAsVectorString } from "../utils/formatArrayAsVectorString.js";
+import { v4 as uuidv4 } from 'uuid';
 
-export const post = async (req: Request, res: Response) => {
+export const post = async (data: any, user: any) => {
+  console.log('call reached')
+  console.log('user', user)
   try {
     let metadata;
-    const { url } = req.body;
+    const { url } = data;
     const response = await axios.get(url);
-    console.log("reponse", response);
+
     if (response) {
       const html = response?.data;
       if (!html) throw new Error("Empty HTML response");
@@ -28,14 +30,23 @@ export const post = async (req: Request, res: Response) => {
       };
     }
 
-    const {formattedData} = formatDataForEmbedding(req.body, metadata);
-
-    console.log("formattedData", formattedData);
+    const { formattedData } = formatDataForEmbedding(data, metadata);
 
     const temp = await getEmbedding(formattedData);
-    const data = formatArrayAsVectorString(temp);
+    const arrayLiteral = formatArrayAsVectorString(temp);
 
-    console.log("data", data);
+    const randomUuid = uuidv4();
+
+  console.log('uuid', typeof randomUuid)
+
+  if (!randomUuid) {
+    throw new Error('ID is undefined');
+  }
+
+  console.log('formattedData', formattedData)
+  console.log('arrayLiteral', arrayLiteral)
+  // console.log('NOW(', NOW())
+  
 
     const result = await prisma.$executeRaw`
       INSERT INTO "Content" (
@@ -48,40 +59,54 @@ export const post = async (req: Request, res: Response) => {
         "embedding"
       )
       VALUES (
-        gen_random_uuid(),
-        '2e058585-8136-4d30-a385-fd737c2a0476',
+        ${randomUuid},
+        ${user},
         NOW(),
         NOW(),
         false ,
         ${formattedData},
-        ${data}::vector
+        ${arrayLiteral}::vector
       );
     `;
 
-    console.log("result", result);
+    return result;
   } catch (error) {
-    //@ts-ignore
-    console.log("error", error.message);
+    throw error;
   }
 };
 
-export const getContent = async (req: Request, res: Response) => {
-  const { searchQuery } = req.body;
+export const get = async (data: any, user: any) => {
+  try {
+    const { searchQuery } = data;
 
-  const embedding = await getEmbedding(searchQuery)
-  const arrayLiteral = formatArrayAsVectorString(embedding)
+    const embedding = await getEmbedding(searchQuery);
+    const arrayLiteral = formatArrayAsVectorString(embedding);
     const results = await prisma.$queryRaw`
-
-    SELECT 
-      "id", 
-      "summary", 
-      1 - ("embedding" <=> ${arrayLiteral}::vector(384)) AS similarity
-    FROM "Content"
-    WHERE "embedding" IS NOT NULL 
-      AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.2
-    ORDER BY similarity DESC
-    LIMIT 5
-  `;
+      SELECT 
+        "id", 
+        "summary", 
+        1 - ("embedding" <=> ${arrayLiteral}::vector(384)) AS similarity
+      FROM "Content"
+      WHERE "embedding" IS NOT NULL 
+        AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.2
+      ORDER BY similarity DESC
+      LIMIT 5
+    `;
+    return results
+  } catch (error) {
+    throw error;
+  }
 };
 
-export const getAllContent = async () => {};
+export const getOne = async (id: string, user: any) => {
+  try {
+    const data = await prisma.content.findUnique({
+      where: {
+        id,
+      },
+    });
+    return data
+  } catch (error) {
+    throw error
+  }
+};
