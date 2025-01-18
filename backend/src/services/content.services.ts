@@ -88,6 +88,7 @@ export const get = async (data: any, user: any) => {
         1 - ("embedding" <=> ${arrayLiteral}::vector(384)) AS similarity
       FROM "Content"
       WHERE "embedding" IS NOT NULL 
+      AND "userId" = ${user} 
         AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.2
       ORDER BY similarity DESC
       LIMIT 5
@@ -104,6 +105,16 @@ export const getOne = async (id: string, user: any) => {
       where: {
         id,
       },
+      select: {
+        id: true,
+        userId: true,
+        title: true,
+        contentText: true,
+        createdAt: true,
+        updatedAt: true,
+        isArchived: true,
+        tags: true
+      }
     });
     return data
   } catch (error) {

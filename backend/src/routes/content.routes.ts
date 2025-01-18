@@ -7,6 +7,6 @@ const contentRoute = Router();
 //@ts-ignore
 contentRoute.post("/", authMiddleware, create);
 contentRoute.get("/", authMiddleware, find);
-contentRoute.get("/all", authMiddleware, findOne);
+contentRoute.get("/:id", authMiddleware, findOne);
 
 export default contentRoute;
