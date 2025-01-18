@@ -4,14 +4,12 @@ import { formatDataForEmbedding } from "../utils/formatContentForEmbedding.js";
 import { prisma } from "../db.js";
 import { getEmbedding } from "../utils/generateEmbeddings.js";
 import { formatArrayAsVectorString } from "../utils/formatArrayAsVectorString.js";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 export const post = async (data: any, user: any) => {
-  console.log('call reached')
-  console.log('user', user)
   try {
     let metadata;
-    const { url } = data;
+    const { url, title, contentText, tags } = data;
     const response = await axios.get(url);
 
     if (response) {
@@ -37,21 +35,19 @@ export const post = async (data: any, user: any) => {
 
     const randomUuid = uuidv4();
 
-  console.log('uuid', typeof randomUuid)
+    if (!randomUuid) {
+      throw new Error("ID is undefined");
+    }
 
-  if (!randomUuid) {
-    throw new Error('ID is undefined');
-  }
-
-  console.log('formattedData', formattedData)
-  console.log('arrayLiteral', arrayLiteral)
-  // console.log('NOW(', NOW())
-  
-
+    console.log("user", user);
     const result = await prisma.$executeRaw`
       INSERT INTO "Content" (
         "id",
         "userId",
+        "title",
+        "url",
+        "contentText",
+        "metadata",
         "createdAt",
         "updatedAt",
         "isArchived",
@@ -60,7 +56,11 @@ export const post = async (data: any, user: any) => {
       )
       VALUES (
         ${randomUuid},
-        ${user},
+        ${user.id},
+        ${title},
+        ${url},
+        ${contentText},
+        ${metadata},
         NOW(),
         NOW(),
         false ,
@@ -69,7 +69,16 @@ export const post = async (data: any, user: any) => {
       );
     `;
 
-    return result;
+    if (result) {
+      await prisma.contentTag.createMany({
+        data: tags.map((tagId: string) => ({
+          randomUuid,
+          tagId,
+          isAuto: false, 
+        })),
+        skipDuplicates: true, 
+      });
+    }
   } catch (error) {
     throw error;
   }
@@ -93,7 +102,7 @@ export const get = async (data: any, user: any) => {
       ORDER BY similarity DESC
       LIMIT 5
     `;
-    return results
+    return results;
   } catch (error) {
     throw error;
   }
@@ -114,11 +123,11 @@ export const getOne = async (id: string, user: any) => {
         createdAt: true,
         updatedAt: true,
         isArchived: true,
-        tags: true
-      }
+        tags: true,
+      },
     });
-    return data
+    return data;
   } catch (error) {
-    throw error
+    throw error;
   }
 };

@@ -4,7 +4,7 @@ import { post, get, getOne } from "../services/content.services.js";
 export async function create(req: Request, res: Response) {
   try {
     //@ts-ignore
-    const create = await post(req.body, req.userId);
+    const create = await post(req.body, req.user);
     console.log('create', create)
     res.status(201).json({
         is_error: false,
