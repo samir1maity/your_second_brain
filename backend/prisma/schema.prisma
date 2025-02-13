@@ -111,7 +111,6 @@ model SearchHistory {
   userId         String
   queryText      String                      @db.Text
   queryEmbedding Unsupported("vector(384)")? 
-  resultsCount   Int?
   createdAt      DateTime                    @default(now()) @db.Timestamptz
 }
 
