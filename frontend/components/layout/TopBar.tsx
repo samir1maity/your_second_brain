@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect, useState } from "react";
 
 interface TopBarProps {
   search: string;
@@ -29,6 +30,13 @@ export function TopBar({
   onAddClick,
 }: TopBarProps) {
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+if (!mounted) return null; // Prevents SSR mismatch
 
   return (
     <div className="border-b border-border">
@@ -62,7 +70,7 @@ export function TopBar({
             size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {theme && (theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
           </Button>
           <Button onClick={onAddClick}>
             <Plus className="h-5 w-5 mr-2" />
