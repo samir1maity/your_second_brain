@@ -17,7 +17,7 @@ export default function Login() {
     e.preventDefault()
     try {
       await login(email, password)
-      router.push("/dashboard")
+      // router.push("/dashboard")
     } catch (error) {
       console.error("Login failed", error)
     }
