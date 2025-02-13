@@ -24,7 +24,7 @@ CREATE TABLE "Content" (
     "url" TEXT,
     "title" VARCHAR(512),
     "contentText" TEXT,
-    "embedding" vector(384),
+    "embedding" extensions.vector(384),
     "metadata" JSONB NOT NULL DEFAULT '{}',
     "summary" TEXT,
     "lastAccessed" TIMESTAMPTZ,
@@ -86,22 +86,10 @@ CREATE TABLE "SearchHistory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "queryText" TEXT NOT NULL,
-    "queryEmbedding" vector(384),
-    "resultsCount" INTEGER,
+    "queryEmbedding" extensions.vector(384),
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "SearchHistory_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ContentRelationship" (
-    "sourceId" TEXT NOT NULL,
-    "targetId" TEXT NOT NULL,
-    "relationshipType" VARCHAR(64) NOT NULL,
-    "strength" DOUBLE PRECISION,
-    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "ContentRelationship_pkey" PRIMARY KEY ("sourceId","targetId","relationshipType")
 );
 
 -- CreateIndex
@@ -145,9 +133,3 @@ ALTER TABLE "CollectionItem" ADD CONSTRAINT "CollectionItem_contentId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "SearchHistory" ADD CONSTRAINT "SearchHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ContentRelationship" ADD CONSTRAINT "ContentRelationship_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Content"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ContentRelationship" ADD CONSTRAINT "ContentRelationship_targetId_fkey" FOREIGN KEY ("targetId") REFERENCES "Content"("id") ON DELETE CASCADE ON UPDATE CASCADE;

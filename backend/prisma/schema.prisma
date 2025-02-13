@@ -12,7 +12,6 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
   extensions = [uuid_ossp(map: "uuid-ossp", schema: "extensions"), vector(schema: "extensions")]
 }
 
@@ -39,7 +38,7 @@ model Content {
   url             String?                     @db.Text
   title           String?                     @db.VarChar(512)
   contentText     String?                     @db.Text
-  embedding       Unsupported("vector(384)")?
+  embedding       Unsupported("extensions.vector(384)")?
   metadata        Json                        @default("{}")
   summary         String?                     @db.Text
   lastAccessed    DateTime?                   @db.Timestamptz
@@ -48,8 +47,6 @@ model Content {
   isArchived      Boolean                     @default(false)
   tags            ContentTag[]
   collections     CollectionItem[]
-  sourceRelations ContentRelationship[]       @relation("SourceContent") // Content that this points to
-  targetRelations ContentRelationship[]       @relation("TargetContent") // Content that points to this
 
   @@index([url])
   @@index([userId])
@@ -110,18 +107,6 @@ model SearchHistory {
   user           User                        @relation(fields: [userId], references: [id])
   userId         String
   queryText      String                      @db.Text
-  queryEmbedding Unsupported("vector(384)")? 
+  queryEmbedding Unsupported("extensions.vector(384)")? 
   createdAt      DateTime                    @default(now()) @db.Timestamptz
-}
-
-model ContentRelationship {
-  sourceContent    Content  @relation("SourceContent", fields: [sourceId], references: [id], onDelete: Cascade)
-  sourceId         String
-  targetContent    Content  @relation("TargetContent", fields: [targetId], references: [id], onDelete: Cascade)
-  targetId         String
-  relationshipType String   @db.VarChar(64)
-  strength         Float? 
-  createdAt        DateTime @default(now()) @db.Timestamptz
-
-  @@id([sourceId, targetId, relationshipType])
 }
