@@ -3,8 +3,12 @@ import "dotenv/config";
 import userRoute from "./routes/user.routes.js";
 import contentRoute from "./routes/content.routes.js";
 import tagRoute from "./routes/tag.routes.js";
+import cors from 'cors'
 
 const app = express();
+// Enable CORS for all origins
+app.use(cors());
+
 
 app.use(express.json());
 
