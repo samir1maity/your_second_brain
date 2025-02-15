@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { WavesIcon } from "lucide-react";
+import { toast, Toaster } from "sonner";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -20,6 +21,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(email, password);
+      toast.success("Login successful! 🎉 Redirecting...");
       router.push("/dashboard")
     } catch (error) {
       console.error("Login failed", error);
@@ -27,39 +29,8 @@ export default function Login() {
   };
 
   return (
-    // <div className="min-h-screen flex items-center justify-center bg-background">
-    //   <Card className="w-full max-w-md">
-    //     <CardHeader>
-    //       <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
-    //     </CardHeader>
-    //     <CardContent>
-    //       <form onSubmit={handleSubmit} className="space-y-4">
-    //         <div>
-    //           <Input
-    //             type="email"
-    //             placeholder="Email"
-    //             value={email}
-    //             onChange={(e) => setEmail(e.target.value)}
-    //             required
-    //           />
-    //         </div>
-    //         <div>
-    //           <Input
-    //             type="password"
-    //             placeholder="Password"
-    //             value={password}
-    //             onChange={(e) => setPassword(e.target.value)}
-    //             required
-    //           />
-    //         </div>
-    //         <Button type="submit" className="w-full">
-    //           Log In
-    //         </Button>
-    //       </form>
-    //     </CardContent>
-    //   </Card>
-    // </div>
     <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 p-4">
+      <Toaster position="top-right" richColors />
       <div className="flex w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl">
         <div className="hidden w-1/2 bg-blue-600 p-10 lg:flex flex-col items-center justify-center text-center text-white">
           <h2 className="mb-4 text-2xl font-bold">
