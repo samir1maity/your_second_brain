@@ -72,7 +72,7 @@ export const post = async (data: any, user: any) => {
     if (result) {
       await prisma.contentTag.createMany({
         data: tags.map((tagId: string) => ({
-          randomUuid,
+          contentId: randomUuid,
           tagId,
           isAuto: false, 
         })),

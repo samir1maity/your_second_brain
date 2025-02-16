@@ -1,17 +1,11 @@
 import { prisma } from "../db.js";
 
-export async function create(data: any, user: any) {
+export async function createMany(data: any [], user: any) {
   console.log("data", data);
   console.log("user", user);
   try {
-    const { name, description } = data;
-    const tag = await prisma.tag.create({
-      data: {
-        name,
-        userId: user.id,
-        description,
-        isSystem: true,
-      },
+    const tag = await prisma.tag.createMany({
+      data
     });
     return tag;
   } catch (error: unknown) {
@@ -34,3 +28,21 @@ export async function getAll(user: any) {
     throw error;
   }
 }
+
+export async function findMany(ids:string[], user: any){
+  try {
+    const tags = await prisma.tag.findMany({
+      where : {
+        id: {
+          in: ids
+        }
+      }
+    })
+    return tags
+  } catch (error) {
+    console.log('error while get find many tags --->', error)
+  }
+}
+
+
+
