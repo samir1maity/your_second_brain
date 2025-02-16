@@ -69,16 +69,32 @@ export const post = async (data: any, user: any) => {
       );
     `;
 
-    if (result) {
-      await prisma.contentTag.createMany({
-        data: tags.map((tagId: string) => ({
-          contentId: randomUuid,
-          tagId,
-          isAuto: false, 
-        })),
-        skipDuplicates: true, 
-      });
-    }
+      if(result){
+       const tagsData = await prisma.tag.findMany({
+          where : {
+            name:{
+              in: tags
+            }
+          }
+        })
+
+        console.log('tagsData', tagsData)
+
+        const contentTagsData = tagsData.map((tag)=>{
+          return {
+            contentId: randomUuid,
+            tagId: tag.id,
+            isAuto: false,
+          }
+        })
+
+        console.log('tagsData after structure', tagsData)
+
+        await prisma.contentTag.createMany({
+          data: contentTagsData
+        })
+      }
+      return true
   } catch (error) {
     throw error;
   }

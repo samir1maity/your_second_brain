@@ -1,10 +1,10 @@
 import { Response, Request } from "express";
-import { create, getAll } from "../services/tag.services.js";
+import { createMany, getAll } from "../services/tag.services.js";
 
-export async function createTag(req: Request, res: Response) {
+export async function createManyTag(req: Request, res: Response) {
   try {
     //@ts-ignore
-    const tag = await create(req.body, req.user);
+    const tag = await createMany(req.body, req.user);
     res.status(201).json({
       is_error: false,
       message: "tag created successfully",

@@ -1,8 +1,6 @@
 import { prisma } from "../db.js";
 
 export async function createMany(data: any [], user: any) {
-  console.log("data", data);
-  console.log("user", user);
   try {
     const tag = await prisma.tag.createMany({
       data
