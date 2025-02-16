@@ -44,7 +44,7 @@ export default function Dashboard() {
       />
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="!ml-64 min-h-screen">
+      <div className="min-h-screen bg-[#303030]">
         <TopBar
           search={search}
           onSearchChange={setSearch}

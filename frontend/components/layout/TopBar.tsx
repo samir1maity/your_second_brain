@@ -80,7 +80,7 @@ export function TopBar({
     //     </div>
     //   </div>
     // </div>
-    <header className="bg-white shadow-sm">
+    <header className="shadow-sm">
     <div className="flex items-center justify-between p-4">
       <button
         onClick={() => setSidebarOpen(true)}

@@ -102,7 +102,7 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Input
               placeholder="Tags (comma-separated)"
               value={formData.tags}
@@ -111,7 +111,7 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
               }
               required
             />
-          </div>
+          </div> */}
           {/* <div className="space-y-2">
             <Input
               placeholder="Image URL (optional)"
