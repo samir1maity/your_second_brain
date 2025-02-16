@@ -22,7 +22,7 @@ export default function Login() {
     try {
       await login(email, password);
       toast.success("Login successful! 🎉 Redirecting...");
-      router.push("/dashboard")
+      router.push("/")
     } catch (error) {
       console.error("Login failed", error);
     }
@@ -62,9 +62,9 @@ export default function Login() {
               </p>
             </div>
             <div className="space-y-4">
-              <Input type="email" placeholder="Email" />
+              <Input type="email" placeholder="Email" value={email} onChange={(e)=> setEmail(e.target.value)}/>
               <div className="space-y-2">
-                <Input type="password" placeholder="Password" />
+                <Input type="password" placeholder="Password" value={password} onChange={(e)=> setPassword(e.target.value)}/>
                 <div className="text-right">
                   <Link
                     href="/forgot-password"

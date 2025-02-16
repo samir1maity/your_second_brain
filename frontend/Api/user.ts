@@ -8,9 +8,16 @@ export const userLogin = async (email: string, password: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    console.log("response", response);
+
+    if (!response.ok) {
+      throw new Error(`Login failed: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    console.log("response", data);
+    return data.data
   } catch (error) {
     console.log("error while login process", error);
+    return null
   }
 };
 
@@ -21,8 +28,14 @@ export const userSignup = async (email: string, password: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    console.log("response", response);
+    if (!response.ok) {
+      throw new Error(`Signup failed: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    console.log("response", data);
+    return data.data
   } catch (error) {
     console.log("error while login process", error);
+    return null
   }
 };

@@ -100,14 +100,14 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
               required
             />
           </div>
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Input
               placeholder="Image URL (optional)"
               type="url"
               value={formData.image}
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
             />
-          </div>
+          </div> */}
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
