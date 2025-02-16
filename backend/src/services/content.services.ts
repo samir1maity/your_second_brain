@@ -38,7 +38,7 @@ export const post = async (data: any, user: any) => {
     if (!randomUuid) {
       throw new Error("ID is undefined");
     }
-
+    console.log('array literal', arrayLiteral)
     console.log("user", user);
     const result = await prisma.$executeRaw`
       INSERT INTO "Content" (

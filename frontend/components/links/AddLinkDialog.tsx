@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TagSelector } from "../tags/TagSelector";
 
 interface AddLinkDialogProps {
   open: boolean;
@@ -27,6 +28,7 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
     tags: "",
     image: "",
   });
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +58,9 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
             <Input
               placeholder="Title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
             />
           </div>
@@ -65,7 +69,9 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
               placeholder="URL"
               type="url"
               value={formData.url}
-              onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, url: e.target.value })
+              }
               required
             />
           </div>
@@ -73,14 +79,18 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
             <Input
               placeholder="Description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               required
             />
           </div>
           <div className="space-y-2">
             <Select
               value={formData.category}
-              onValueChange={(value) => setFormData({ ...formData, category: value })}
+              onValueChange={(value) =>
+                setFormData({ ...formData, category: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
@@ -96,7 +106,9 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
             <Input
               placeholder="Tags (comma-separated)"
               value={formData.tags}
-              onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, tags: e.target.value })
+              }
               required
             />
           </div>
@@ -108,6 +120,15 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
             />
           </div> */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tags
+            </label>
+            <TagSelector
+              selectedTags={selectedTags}
+              setSelectedTags={setSelectedTags}
+            />
+          </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel

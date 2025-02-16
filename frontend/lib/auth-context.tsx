@@ -10,7 +10,7 @@ type User = {
 };
 
 type AuthContextType = {
-  user: User | null;
+  user: User | null | undefined;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 };
@@ -18,14 +18,12 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
 
   useEffect(() => {
     // Check if user is logged in (e.g., by checking localStorage or a token)
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    setUser(storedUser ? JSON.parse(storedUser) : null)
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -41,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
+      {user !== undefined && children}
     </AuthContext.Provider>
   );
 }

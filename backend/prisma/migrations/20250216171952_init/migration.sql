@@ -24,7 +24,7 @@ CREATE TABLE "Content" (
     "url" TEXT,
     "title" VARCHAR(512),
     "contentText" TEXT,
-    "embedding" extensions.vector(384),
+    "embedding" vector(384),
     "metadata" JSONB NOT NULL DEFAULT '{}',
     "summary" TEXT,
     "lastAccessed" TIMESTAMPTZ,
@@ -86,7 +86,7 @@ CREATE TABLE "SearchHistory" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "queryText" TEXT NOT NULL,
-    "queryEmbedding" extensions.vector(384),
+    "queryEmbedding" vector(384),
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "SearchHistory_pkey" PRIMARY KEY ("id")

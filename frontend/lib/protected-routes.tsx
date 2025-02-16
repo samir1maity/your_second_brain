@@ -11,13 +11,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [user, router]);
 
-  if (!user) {
-    return null;
-  }
+  if (user === undefined) return null;
 
   return <>{children}</>;
 }

@@ -8,6 +8,7 @@ export const authMiddleware = (
   next: NextFunction
 ) => {
   const token = req.headers["authorization"];
+  console.log('token', token)
   const decode = jwt.verify(token as string, SECRET_USER_PASSWORD);
 
   if (decode) {

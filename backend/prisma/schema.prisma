@@ -38,7 +38,7 @@ model Content {
   url             String?                     @db.Text
   title           String?                     @db.VarChar(512)
   contentText     String?                     @db.Text
-  embedding       Unsupported("extensions.vector(384)")?
+  embedding       Unsupported("vector(384)")?
   metadata        Json                        @default("{}")
   summary         String?                     @db.Text
   lastAccessed    DateTime?                   @db.Timestamptz
@@ -107,6 +107,6 @@ model SearchHistory {
   user           User                        @relation(fields: [userId], references: [id])
   userId         String
   queryText      String                      @db.Text
-  queryEmbedding Unsupported("extensions.vector(384)")? 
+  queryEmbedding Unsupported("vector(384)")? 
   createdAt      DateTime                    @default(now()) @db.Timestamptz
 }
