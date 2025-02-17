@@ -77,8 +77,8 @@ export const userLogin = async (userData: {
       user: {
         id: isUser.id,
         email: isUser.email,
+        jwt_token,
       },
-      jwt_token,
     };
   } catch (error) {
     if (error instanceof AppError) throw error;

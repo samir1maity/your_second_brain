@@ -36,7 +36,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
             <li key={index}>
               <a
                 href="#"
-                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800 transition-colors"
+                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-card transition-colors"
               >
                 <item.icon size={20} />
                 <span>{item.label}</span>

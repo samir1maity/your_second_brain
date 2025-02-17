@@ -7,7 +7,8 @@ import { LinkGrid } from "@/components/links/LinkGrid";
 import AddLinkDialog from "@/components/links/AddLinkDialog";
 import { initialLinks } from "@/lib/data";
 import { Link } from "@/types/link";
-import { Menu, Plus, Search } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { postContent } from "@/Api/content";
 
 export default function Dashboard() {
   const [links, setLinks] = useState<Link[]>(initialLinks);
@@ -17,6 +18,8 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuth();
+  
 
   const filteredLinks = links.filter((link) => {
     const matchesSearch =
@@ -29,18 +32,21 @@ export default function Dashboard() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleAddLink = (newLink: Omit<Link, "id">) => {
-    setLinks([...links, { ...newLink, id: links.length + 1 }]);
+  const handleAddLink = async (newLink: Omit<Link, "id">) => {
+    console.log('newLink', newLink)
+    // setLinks([...links, { ...newLink, id: links.length + 1 }]);
+    if(user?.jwt_token === undefined){
+       return 
+    }
+    const response = await postContent(user?.jwt_token, newLink )
     setIsDialogOpen(false);
   };
 
-    // Initialize state after mount
     useEffect(() => {
       setLinks(initialLinks || []);
       setMounted(true);
     }, []);
   
-    // Don't render until after mount
     if (!mounted) {
       return null;
     }
@@ -56,7 +62,7 @@ export default function Dashboard() {
       )}
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <main className="ml-0 lg:ml-64">
+      <main className="min-h-screen">
         <TopBar
           search={search}
           onSearchChange={setSearch}
@@ -66,7 +72,7 @@ export default function Dashboard() {
           setSidebarOpen={setSidebarOpen}
         />
         {/* Main Content Area */}
-        <div className="p-6 lg:ml-0">
+        <div className="p-6 lg:ml-64">
           <LinkGrid links={filteredLinks} />
         </div>
       </main>

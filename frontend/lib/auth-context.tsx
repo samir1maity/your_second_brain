@@ -7,6 +7,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 type User = {
   name: string;
   email: string;
+  jwt_token: string
 };
 
 type AuthContextType = {

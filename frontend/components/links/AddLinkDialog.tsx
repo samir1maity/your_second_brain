@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,31 +24,32 @@ interface AddLinkDialogProps {
   onAdd: (link: any) => void;
 }
 
-export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDialogProps) {
+export default function AddLinkDialog({
+  open,
+  onOpenChange,
+  onAdd,
+}: AddLinkDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     url: "",
     description: "",
     category: "",
-    tags: "",
-    image: "",
+    tags: [],
   });
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAdd({
       ...formData,
-      tags: formData.tags.split(",").map((tag) => tag.trim()),
-      image: formData.image || "https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?w=800&auto=format&fit=crop&q=60",
+      tags: selectedTags,
     });
     setFormData({
       title: "",
       url: "",
       description: "",
       category: "",
-      tags: "",
-      image: "",
+      tags: []
     });
   };
 
@@ -102,24 +108,6 @@ export default function AddLinkDialog({ open, onOpenChange, onAdd }: AddLinkDial
               </SelectContent>
             </Select>
           </div>
-          {/* <div className="space-y-2">
-            <Input
-              placeholder="Tags (comma-separated)"
-              value={formData.tags}
-              onChange={(e) =>
-                setFormData({ ...formData, tags: e.target.value })
-              }
-              required
-            />
-          </div> */}
-          {/* <div className="space-y-2">
-            <Input
-              placeholder="Image URL (optional)"
-              type="url"
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-            />
-          </div> */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Tags
