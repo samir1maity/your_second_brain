@@ -52,7 +52,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 rounded-md border border-gray-200">
+      <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-background rounded-md border border-input">
         {selectedTags.map((tag) => {
           const tagObj = allTags.find((t) => t.name === tag)
           return (
@@ -60,7 +60,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
               key={tag}
               variant="secondary"
               className="text-sm py-1 px-2 flex items-center gap-1"
-              style={{ backgroundColor: tagObj?.color, color: "#ffffff" }}
+              style={{ backgroundColor: tagObj?.color, color: "#000" }}
             >
               {tag}
               <X
@@ -73,7 +73,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
         {selectedTags.length === 0 && <span className="text-sm text-gray-400">No tags selected</span>}
       </div>
       <div className="space-y-2">
-        <h4 className="text-sm font-medium text-gray-700">Available Tags</h4>
+        <h4 className="text-sm font-medium text-gray-300">Available Tags</h4>
         <div className="flex flex-wrap gap-2">
           {allTags.map((tag) => {
             const isSelected = selectedTags.includes(tag.name)
@@ -82,7 +82,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
                 key={tag.name}
                 variant="outline"
                 size="sm"
-                className={`text-xs font-normal ${isSelected ? "bg-gray-100" : "bg-white"}`}
+                className={`text-xs hover:!bg-transparent hover:!text-inherit font-normal ${isSelected ? "bg-muted" : "bg-muted"}`}
                 style={{
                   borderColor: tag.color,
                   color: tag.color,
@@ -97,7 +97,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
         </div>
       </div>
       <div className="pt-4 border-t border-gray-200">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Create Custom Tag</h4>
+        <h4 className="text-sm font-medium text-gray-300 mb-2">Create Custom Tag</h4>
         <div className="flex items-center space-x-2">
           <Input
             type="text"
