@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { LinkGrid } from "@/components/links/LinkGrid";
@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   const filteredLinks = links.filter((link) => {
     const matchesSearch =
@@ -33,18 +34,29 @@ export default function Dashboard() {
     setIsDialogOpen(false);
   };
 
+    // Initialize state after mount
+    useEffect(() => {
+      setLinks(initialLinks || []);
+      setMounted(true);
+    }, []);
+  
+    // Don't render until after mount
+    if (!mounted) {
+      return null;
+    }
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <>
       {/* Sidebar for mobile */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      />
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       {/* Sidebar */}
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <div className="min-h-screen bg-[#303030]">
+      <main className="ml-0 lg:ml-64">
         <TopBar
           search={search}
           onSearchChange={setSearch}
@@ -54,15 +66,15 @@ export default function Dashboard() {
           setSidebarOpen={setSidebarOpen}
         />
         {/* Main Content Area */}
-        <div className="p-6">
+        <div className="p-6 lg:ml-0">
           <LinkGrid links={filteredLinks} />
         </div>
-      </div>
+      </main>
       <AddLinkDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onAdd={handleAddLink}
       />
-    </div>
+    </>
   );
 }

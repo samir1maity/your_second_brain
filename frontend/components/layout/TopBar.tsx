@@ -80,7 +80,7 @@ export function TopBar({
     //     </div>
     //   </div>
     // </div>
-    <header className="shadow-sm">
+    <header className="shadow-sm lg:ml-0">
     <div className="flex items-center justify-between p-4">
       <button
         onClick={() => setSidebarOpen(true)}
@@ -97,12 +97,12 @@ export function TopBar({
             placeholder="Search..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent"
           />
         </div>
       </div>
 
-      <button onClick={onAddClick} className="flex items-center space-x-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+      <button onClick={onAddClick} className="flex items-center space-x-2 bg-primary text-secondary px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
         <Plus size={20} />
         <span>Add New</span>
       </button>

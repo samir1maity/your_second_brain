@@ -82,7 +82,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
                 key={tag.name}
                 variant="outline"
                 size="sm"
-                className={`text-xs hover:!bg-transparent hover:!text-inherit font-normal ${isSelected ? "bg-muted" : "bg-muted"}`}
+                className={`text-xs hover:!bg-transparent hover:!text-inherit font-normal`}
                 style={{
                   borderColor: tag.color,
                   color: tag.color,
@@ -96,7 +96,7 @@ export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps)
           })}
         </div>
       </div>
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-gray-200">
         <h4 className="text-sm font-medium text-gray-300 mb-2">Create Custom Tag</h4>
         <div className="flex items-center space-x-2">
           <Input
