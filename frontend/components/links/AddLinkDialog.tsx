@@ -39,7 +39,6 @@ export default function AddLinkDialog({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    console.log('handle submit form triggered')
     e.preventDefault();
     onAdd({
       ...formData,

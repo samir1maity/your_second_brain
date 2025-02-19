@@ -16,7 +16,7 @@ export function LinkCard({ link }: LinkCardProps) {
     <Card className="group overflow-hidden">
       <div className="relative aspect-video overflow-hidden">
         <Image
-          src={link.image}
+          src={link?.metadata?.ogImage}
           alt={link.title}
           fill
           className="object-cover transition-transform group-hover:scale-105"
@@ -30,7 +30,7 @@ export function LinkCard({ link }: LinkCardProps) {
           <Bookmark className="h-4 w-4" />
         </Button>
       </div>
-      
+
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <h3 className="font-semibold line-clamp-1">{link.title}</h3>
@@ -49,13 +49,15 @@ export function LinkCard({ link }: LinkCardProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <div className="flex flex-wrap gap-2">
-          {link.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
+        {link?.tags?.length ? (
+          <div className="flex flex-wrap gap-2">
+            {link.tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
       </CardFooter>
     </Card>
   );

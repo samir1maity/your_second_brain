@@ -5,45 +5,55 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { LinkGrid } from "@/components/links/LinkGrid";
 import AddLinkDialog from "@/components/links/AddLinkDialog";
-import { initialLinks } from "@/lib/data";
+// import { initialLinks } from "@/lib/data";
 import { Link } from "@/types/link";
 import { useAuth } from "@/lib/auth-context";
 import { getContents, postContent } from "@/Api/content";
 
 export default function Dashboard() {
-  const [links, setLinks] = useState<Link[]>(initialLinks);
+  const [links, setLinks] = useState<Link[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
-  
 
-  const filteredLinks = links.filter((link) => {
-    const matchesSearch =
-      link.title.toLowerCase().includes(search.toLowerCase()) ||
-      link.description.toLowerCase().includes(search.toLowerCase()) ||
-      link.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
+  // const filteredLinks = links.filter((link) => {
+  //   const matchesSearch =
+  //     link.title.toLowerCase().includes(search.toLowerCase()) ||
+  //     link.description.toLowerCase().includes(search.toLowerCase()) ||
+  //     link.tags.some((tag) => tag.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesCategory = category === "all" || link.category === category;
+  //   const matchesCategory = category === "all" || link.category === category;
 
-    return matchesSearch && matchesCategory;
-  });
+  //   return matchesSearch && matchesCategory;
+  // });
 
-  const handleAddLink = async (newLink: Omit<Link, "id">) => {
-    // setLinks([...links, { ...newLink, id: links.length + 1 }]);
-    console.log('user', user)
-    console.log('user', user?.jwt_token)
-    if(user?.jwt_token === undefined){
-       return 
+  const handleAddLink = async (newLink: Link) => {
+    if (user?.jwt_token === undefined) {
+      return;
     }
-    console.log('newLink', newLink)
-    const response = await postContent(user?.jwt_token, newLink )
-    console.log('response', response)
-    const results = await getContents(user?.jwt_token)
+    const response = await postContent(user?.jwt_token, newLink);
     setIsDialogOpen(false);
   };
+
+  const getAllContent = async () => {
+    if (user?.jwt_token === undefined) {
+      return;
+    }
+    const results = await getContents(user?.jwt_token);
+    console.log("results", results);
+    setLinks(results?.data?.posts);
+  };
+
+  useEffect(() => {
+    getAllContent()
+  }, []);
+
+  if (!links) {
+    return <div>loading....</div>;
+  }
 
   return (
     <>
@@ -67,7 +77,7 @@ export default function Dashboard() {
         />
         {/* Main Content Area */}
         <div className="p-6 lg:ml-64">
-          <LinkGrid links={filteredLinks} />
+          <LinkGrid links={links} />
         </div>
       </main>
       <AddLinkDialog
