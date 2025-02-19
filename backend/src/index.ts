@@ -13,9 +13,6 @@ app.use(cors());
 
 app.use(express.json());
 
-app.get('/',(req,res)=>{
-  res.send('welcome to your second brain')
-})
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/content", contentRoute);
 app.use("/api/v1/tag", tagRoute);
