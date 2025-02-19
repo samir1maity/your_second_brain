@@ -17,7 +17,6 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
   
 
@@ -33,23 +32,16 @@ export default function Dashboard() {
   });
 
   const handleAddLink = async (newLink: Omit<Link, "id">) => {
-    console.log('newLink', newLink)
     // setLinks([...links, { ...newLink, id: links.length + 1 }]);
+    console.log('user', user)
+    console.log('user', user?.jwt_token)
     if(user?.jwt_token === undefined){
        return 
     }
+    console.log('newLink', newLink)
     const response = await postContent(user?.jwt_token, newLink )
     setIsDialogOpen(false);
   };
-
-    useEffect(() => {
-      setLinks(initialLinks || []);
-      setMounted(true);
-    }, []);
-  
-    if (!mounted) {
-      return null;
-    }
 
   return (
     <>

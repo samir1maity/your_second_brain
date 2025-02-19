@@ -124,6 +124,39 @@ export const get = async (data: any, user: any) => {
   }
 };
 
+export const getWithPagination = async (
+  query: { page: string; limit: string },
+  id: any
+) => {
+  try {
+    const { page = 1, limit = 10 } = query;
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
+    const posts = await prisma.content.findMany({
+      where: { userId:id },
+      skip,
+      take,
+      orderBy: { createdAt: "desc" },
+    });
+
+    console.log('posts', posts)
+
+    const totalPosts = await prisma.content.count({ where: { id } });
+
+    return {
+      posts,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(totalPosts / take),
+    };
+  } catch (error) {
+    console.log('error while get content process -->' , error)
+    throw error
+  }
+};
+
 export const getOne = async (id: string, user: any) => {
   try {
     const data = await prisma.content.findUnique({

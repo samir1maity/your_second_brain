@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
-import { create, find, findOne } from "../controller/content.controller.js";
+import { create, fetchWithPagination, find, findOne } from "../controller/content.controller.js";
 
 const contentRoute = Router();
 
-//@ts-ignore
+
+contentRoute.get("/all", authMiddleware, fetchWithPagination);
 contentRoute.post("/", authMiddleware, create);
 contentRoute.get("/", authMiddleware, find);
 contentRoute.get("/:id", authMiddleware, findOne);

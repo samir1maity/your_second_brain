@@ -4,10 +4,11 @@ const URL_PREFIX = "/api/v1/content";
 
 export const postContent = async (token: string, data: any) => {
   try {
+    console.log('reached to post content function')
     const response = await fetch(`${API_URL}${URL_PREFIX}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),

@@ -32,13 +32,14 @@ export default function AddLinkDialog({
   const [formData, setFormData] = useState({
     title: "",
     url: "",
-    description: "",
+    contentText: "",
     category: "",
     tags: [],
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
+    console.log('handle submit form triggered')
     e.preventDefault();
     onAdd({
       ...formData,
@@ -47,7 +48,7 @@ export default function AddLinkDialog({
     setFormData({
       title: "",
       url: "",
-      description: "",
+      contentText: "",
       category: "",
       tags: []
     });
@@ -83,10 +84,10 @@ export default function AddLinkDialog({
           </div>
           <div className="space-y-2">
             <Input
-              placeholder="Description"
-              value={formData.description}
+              placeholder="description"
+              value={formData.contentText}
               onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
+                setFormData({ ...formData, contentText: e.target.value })
               }
               required
             />

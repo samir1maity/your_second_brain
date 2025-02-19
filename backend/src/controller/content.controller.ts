@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
-import { post, get, getOne } from "../services/content.services.js";
+import { NextFunction, Request, Response } from "express";
+import { post, get, getOne, getWithPagination } from "../services/content.services.js";
+import { ResponseHandler } from "../utils/responseBuilder.js";
 
 export async function create(req: Request, res: Response) {
   try {
@@ -32,16 +33,26 @@ export async function find(req: Request, res: Response) {
     }
 }
 
-export async function findOne(req: Request, res: Response) {
+export async function findOne(req: Request, res: Response, next: NextFunction) {
     try {
-    //@ts-ignore
-    const create = await getOne(req.params.id , req.userId);
-    res.status(201).json({
-        is_error: false,
-        data: create,
-        message: "content fetched successfully",
-    });
+        //@ts-ignore
+        const result = await getOne(req.params.id , req.userId);
+        ResponseHandler.success(res, result, 200);
     } catch (error:unknown) {
-        console.log('error', error)
+        console.log("error while get one content process", error);
+        next(error);
+    }
+}
+
+export async function fetchWithPagination(req: Request, res: Response, next: NextFunction) {
+    //@ts-ignore
+    console.log('code reached', req.user.id)
+    try {
+        //@ts-ignore
+        const result = await getWithPagination(req.query , req.user.id);
+        ResponseHandler.success(res, result, 200);
+    } catch (error:unknown) {
+        console.log("error while get content process", error);
+        next(error);
     }
 }

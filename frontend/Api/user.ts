@@ -13,8 +13,7 @@ export const userLogin = async (email: string, password: string) => {
       throw new Error(`Login failed: ${response.status} ${response.statusText}`);
     }
     const data = await response.json();
-    console.log("response", data);
-    return data.data
+    return data.data.user
   } catch (error) {
     console.log("error while login process", error);
     return null
