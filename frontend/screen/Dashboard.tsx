@@ -8,7 +8,7 @@ import AddLinkDialog from "@/components/links/AddLinkDialog";
 // import { initialLinks } from "@/lib/data";
 import { Link } from "@/types/link";
 import { useAuth } from "@/lib/auth-context";
-import { getContents, postContent } from "@/Api/content";
+import { getContents, postContent, searchContent } from "@/Api/content";
 
 export default function Dashboard() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -16,7 +16,9 @@ export default function Dashboard() {
   const [category, setCategory] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [isLoading, setIsLoading] = useState(false)
   const { user } = useAuth();
 
   // const filteredLinks = links.filter((link) => {
@@ -31,25 +33,59 @@ export default function Dashboard() {
   // });
 
   const handleAddLink = async (newLink: Link) => {
-    if (user?.jwt_token === undefined) {
-      return;
+    if (!user?.jwt_token) return;
+    try {
+      const response = await postContent(user.jwt_token, newLink);
+      await getAllContent();
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Error adding link:", error);
     }
-    const response = await postContent(user?.jwt_token, newLink);
-    setIsDialogOpen(false);
   };
 
   const getAllContent = async () => {
-    if (user?.jwt_token === undefined) {
-      return;
+    if (!user?.jwt_token) return;
+    
+    setIsLoading(true);
+    try {
+      const results = await getContents(user.jwt_token);
+      setLinks(results?.data?.posts || []);
+    } catch (error) {
+      console.error("Error fetching content:", error);
+    } finally {
+      setIsLoading(false);
     }
-    const results = await getContents(user?.jwt_token);
-    console.log("results", results);
-    setLinks(results?.data?.posts);
+  };
+
+  const handleSearchContent = async (searchTerm: string) => {
+    if (!user?.jwt_token) return;
+    
+    setIsLoading(true);
+    try {
+      if (!searchTerm.trim()) {
+        await getAllContent();
+        return;
+      }
+      const data = await searchContent(user.jwt_token, searchTerm, page, limit);
+      setLinks(data?.data || []);
+    } catch (error) {
+      console.error("Error searching content:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    getAllContent()
-  }, []);
+    getAllContent();
+  }, [user?.jwt_token]);
+
+  useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      handleSearchContent(search);
+    }, 300); 
+
+    return () => clearTimeout(debounceTimeout);
+  }, [search, page, limit]);
 
   if (!links) {
     return <div>loading....</div>;
@@ -77,7 +113,19 @@ export default function Dashboard() {
         />
         {/* Main Content Area */}
         <div className="p-6 lg:ml-64">
-          <LinkGrid links={links} />
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900" />
+            </div>
+          ) : links.length === 0 ? (
+            <div className="text-center py-10 text-gray-500">
+              {search.trim() 
+                ? "No results found for your search" 
+                : "No content available yet. Click 'Add Link' to get started!"}
+            </div>
+          ) : (
+            <LinkGrid links={links} />
+          )}
         </div>
       </main>
       <AddLinkDialog

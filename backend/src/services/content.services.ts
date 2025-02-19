@@ -109,6 +109,13 @@ export const get = async (data: any, user: any) => {
     const results = await prisma.$queryRaw`
       SELECT 
         "id", 
+        "summary",
+        "contentText",
+        "createdAt",
+        "isArchived",
+        "metadata",
+        "title",
+        "url",
         "summary", 
         1 - ("embedding" <=> ${arrayLiteral}::vector(384)) AS similarity
       FROM "Content"

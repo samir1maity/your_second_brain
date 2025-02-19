@@ -16,7 +16,7 @@ export function LinkCard({ link }: LinkCardProps) {
     <Card className="group overflow-hidden">
       <div className="relative aspect-video overflow-hidden">
         <Image
-          src={link?.metadata?.ogImage}
+          src={link?.metadata?.ogImage ? link?.metadata?.ogImage : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQE3CETL_OertJKScoHfblxs6CBrKGVCmVESw&s'}
           alt={link.title}
           fill
           className="object-cover transition-transform group-hover:scale-105"
