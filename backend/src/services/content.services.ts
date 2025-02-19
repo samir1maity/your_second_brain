@@ -87,9 +87,6 @@ export const post = async (data: any, user: any) => {
             isAuto: false,
           }
         })
-
-        console.log('tagsData after structure', tagsData)
-
         await prisma.contentTag.createMany({
           data: contentTagsData
         })
@@ -121,7 +118,7 @@ export const get = async (data: any, user: any) => {
       FROM "Content"
       WHERE "embedding" IS NOT NULL 
       AND "userId" = ${user?.id} 
-        AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.2
+        AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.6
       ORDER BY similarity DESC
       LIMIT 5
     `;
@@ -147,8 +144,6 @@ export const getWithPagination = async (
       take,
       orderBy: { createdAt: "desc" },
     });
-
-    console.log('posts', posts)
 
     const totalPosts = await prisma.content.count({ where: { id } });
 
