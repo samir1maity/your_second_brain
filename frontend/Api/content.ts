@@ -4,7 +4,6 @@ const URL_PREFIX = "/api/v1/content";
 
 export const postContent = async (token: string, data: any) => {
   try {
-    console.log('reached to post content function')
     const response = await fetch(`${API_URL}${URL_PREFIX}`, {
       method: "POST",
       headers: {
@@ -16,6 +15,27 @@ export const postContent = async (token: string, data: any) => {
 
     if (!response.ok) {
       throw new Error("Failed to post content");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error while posting content:", error);
+    throw error;
+  }
+};
+
+export const getContents = async (token: string) => {
+  try {
+    const response = await fetch(`${API_URL}${URL_PREFIX}/all`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to get contents");
     }
 
     return await response.json();

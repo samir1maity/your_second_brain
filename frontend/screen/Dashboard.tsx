@@ -8,7 +8,7 @@ import AddLinkDialog from "@/components/links/AddLinkDialog";
 import { initialLinks } from "@/lib/data";
 import { Link } from "@/types/link";
 import { useAuth } from "@/lib/auth-context";
-import { postContent } from "@/Api/content";
+import { getContents, postContent } from "@/Api/content";
 
 export default function Dashboard() {
   const [links, setLinks] = useState<Link[]>(initialLinks);
@@ -40,6 +40,8 @@ export default function Dashboard() {
     }
     console.log('newLink', newLink)
     const response = await postContent(user?.jwt_token, newLink )
+    console.log('response', response)
+    const results = await getContents(user?.jwt_token)
     setIsDialogOpen(false);
   };
 
