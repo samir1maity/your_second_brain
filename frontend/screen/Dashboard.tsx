@@ -63,6 +63,7 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       if (!searchTerm.trim()) {
+        console.log('reached here')
         await getAllContent();
         return;
       }

@@ -9,13 +9,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { TagSelector } from "../tags/TagSelector";
 
 interface AddLinkDialogProps {
@@ -90,23 +83,6 @@ export default function AddLinkDialog({
               }
               required
             />
-          </div>
-          <div className="space-y-2">
-            <Select
-              value={formData.category}
-              onValueChange={(value) =>
-                setFormData({ ...formData, category: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="social">Social</SelectItem>
-                <SelectItem value="study">Study</SelectItem>
-                <SelectItem value="docs">Documentation</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
