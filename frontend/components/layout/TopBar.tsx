@@ -1,18 +1,8 @@
 "use client";
 
-import { Search, Plus, Moon, Sun, Settings, User, Menu } from "lucide-react";
+import { Search, Plus, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useTheme } from "next-themes";
-import { UserNav } from "@/components/layout/UserNav";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 interface TopBarProps {
   search: string;
@@ -31,41 +21,65 @@ export function TopBar({
   onAddClick,
   setSidebarOpen
 }: TopBarProps) {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  // Handle scroll effect
   useEffect(() => {
-    setMounted(true);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
-    <header className="shadow-sm lg:ml-64">
-    <div className="flex items-center justify-between p-4">
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden text-gray-600 hover:text-gray-900"
-      >
-        <Menu size={24} />
-      </button>
+    <header className={`fixed top-0 right-0 left-0 lg:left-64 z-20 transition-all duration-200 ${
+      isScrolled ? 'bg-[#121212]/95 backdrop-blur-md shadow-lg' : 'bg-[#121212]'
+    }`}>
+      <div className="flex items-center h-16 px-4 md:px-6">
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="mr-3 lg:hidden text-gray-400 hover:text-white p-1.5 rounded-md hover:bg-[#252525] transition-colors"
+        >
+          <Menu size={20} />
+        </button>
 
-      <div className="flex-1 max-w-2xl mx-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="bg-[#171717] w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-transparent"
-          />
+        {/* Search - takes most of the space */}
+        <div className="flex-1 relative">
+          <div className="relative w-full max-w-3xl mx-auto lg:mx-0 group">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-teal-400 transition-colors" size={16} />
+            <input
+              type="text"
+              placeholder="Search content..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-[#1d1d1d] border-0 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-500/50 text-sm transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Add new button - always visible but adapts to screen size */}
+        <div className="ml-3">
+          <Button 
+            onClick={onAddClick} 
+            className="hidden sm:flex items-center space-x-2 bg-[#1d1d1d] hover:bg-[#252525] text-white border-0 shadow-sm"
+            size="sm"
+          >
+            <Plus size={16} className="text-teal-400" />
+            <span>Add New</span>
+          </Button>
+          
+          <Button 
+            onClick={onAddClick} 
+            className="sm:hidden flex items-center justify-center w-9 h-9 p-0 rounded-md bg-[#1d1d1d] hover:bg-[#252525] text-teal-400 border-0 shadow-sm"
+            size="icon"
+          >
+            <Plus size={18} />
+          </Button>
         </div>
       </div>
-
-      <button onClick={onAddClick} className="flex items-center space-x-2 bg-primary text-secondary px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
-        <Plus size={20} />
-        <span>Add New</span>
-      </button>
-    </div>
-  </header>
+    </header>
   );
 }

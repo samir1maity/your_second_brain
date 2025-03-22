@@ -102,22 +102,28 @@ export default function Dashboard() {
   }
 
   return (
-    <>
-      {/* Sidebar for mobile */}
+    <div className="flex h-screen bg-background">
+      {/* Sidebar for mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      {/* Sidebar */}
-      <Sidebar 
-        sidebarOpen={sidebarOpen} 
-        setSidebarOpen={setSidebarOpen} 
-        selectedTags={selectedTags}
-        onTagSelect={handleTagSelect}
-      />
-      <main className="min-h-screen">
+      
+      {/* Sidebar - fixed position */}
+      <div className="fixed top-0 left-0 h-full z-30">
+        <Sidebar 
+          sidebarOpen={sidebarOpen} 
+          setSidebarOpen={setSidebarOpen} 
+          selectedTags={selectedTags}
+          onTagSelect={handleTagSelect}
+        />
+      </div>
+      
+      {/* Main content area - with proper margin */}
+      <div className="flex-1 flex flex-col min-h-screen w-full pt-16">
+        {/* TopBar - fixed at the top of the content area */}
         <TopBar
           search={search}
           onSearchChange={setSearch}
@@ -126,15 +132,16 @@ export default function Dashboard() {
           onAddClick={() => setIsDialogOpen(true)}
           setSidebarOpen={setSidebarOpen}
         />
-        {/* Main Content Area */}
-        <div className="p-6 lg:ml-64">
+        
+        {/* Content with padding */}
+        <main className="flex-1 p-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500" />
               <p className="mt-4 text-gray-400">Loading your content...</p>
             </div>
           ) : links.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 bg-[#1a1a1a] rounded-lg p-8 shadow-md">
+            <div className="text-center py-10 text-gray-500 bg-[#1a1a1a] rounded-lg p-8 shadow-md lg:pt-16 lg:pl-64">
               <div className="mb-4">
                 <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -156,13 +163,14 @@ export default function Dashboard() {
           ) : (
             <LinkGrid links={links} />
           )}
-        </div>
-      </main>
+        </main>
+      </div>
+      
       <AddLinkDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onAdd={handleAddLink}
       />
-    </>
+    </div>
   );
 }
