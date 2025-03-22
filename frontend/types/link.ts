@@ -14,4 +14,7 @@ export interface Link {
   tags?: string[];
   category: string;
   metadata: Metadata;
+  createdAt: string;
+  updatedAt: string;
+  contentText: string;  
 }

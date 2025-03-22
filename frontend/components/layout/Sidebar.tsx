@@ -83,13 +83,13 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
         </ul>
       </nav>
 
-      <div className="mt-2 mb-4">
+      <div className="flex flex-col h-full overflow-hidden">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Tags</h2>
           {localSelectedTags.length > 0 && (
             <button 
               onClick={() => setLocalSelectedTags([])}
-              className="text-xs text-blue-400 hover:text-blue-300"
+              className="text-xs text-teal-400 hover:text-teal-300"
             >
               Clear all
             </button>
@@ -105,12 +105,12 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
             placeholder="Search tags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#252525] rounded-md py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-[#252525] rounded-md py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
           />
         </div>
         
         {localSelectedTags.length > 0 && (
-          <div className="mb-3">
+          <div className="mb-3 flex-shrink-0">
             <div className="text-xs text-gray-400 mb-2">Selected tags:</div>
             <div className="flex flex-wrap gap-2">
               {localSelectedTags.map(tagId => {
@@ -118,12 +118,12 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
                 return tag ? (
                   <div 
                     key={tag.id} 
-                    className="bg-blue-600 text-white text-xs rounded-full px-2 py-1 flex items-center"
+                    className="bg-gradient-to-r from-teal-500 to-teal-400 text-white text-xs rounded-full px-2 py-1 flex items-center shadow-sm"
                   >
                     <span className="mr-1">{tag.name}</span>
                     <button 
                       onClick={() => handleTagToggle(tag.id)}
-                      className="hover:bg-blue-700 rounded-full p-0.5"
+                      className="hover:bg-teal-600 rounded-full p-0.5"
                     >
                       <X size={12} />
                     </button>
@@ -134,27 +134,29 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
           </div>
         )}
         
-        <div className="overflow-y-auto max-h-[calc(100vh-350px)] space-y-1 pr-1 custom-scrollbar">
+        <div className="overflow-y-auto flex-grow custom-scrollbar pr-1">
           {filteredTags.length > 0 ? (
-            filteredTags.map((tag) => {
-              const isSelected = localSelectedTags.includes(tag.id);
-              return (
-                <button
-                  key={tag.id}
-                  onClick={() => handleTagToggle(tag.id)}
-                  className={`flex items-center w-full text-left p-2 rounded-md text-sm transition-colors ${
-                    isSelected
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-[#252525] text-gray-300"
-                  }`}
-                >
-                  <div className={`w-4 h-4 mr-2 flex-shrink-0 rounded border ${isSelected ? 'bg-blue-500 border-blue-400' : 'border-gray-500'} flex items-center justify-center`}>
-                    {isSelected && <Check size={12} />}
-                  </div>
-                  <span className="truncate">{tag.name}</span>
-                </button>
-              );
-            })
+            <div className="space-y-1">
+              {filteredTags.map((tag) => {
+                const isSelected = localSelectedTags.includes(tag.id);
+                return (
+                  <button
+                    key={tag.id}
+                    onClick={() => handleTagToggle(tag.id)}
+                    className={`flex items-center w-full text-left p-2 rounded-md text-sm transition-colors ${
+                      isSelected
+                        ? "bg-gradient-to-r from-teal-600 to-teal-500 text-white"
+                        : "hover:bg-[#252525] text-gray-300"
+                    }`}
+                  >
+                    <div className={`w-4 h-4 mr-2 flex-shrink-0 rounded border ${isSelected ? 'bg-teal-400 border-teal-300' : 'border-gray-500'} flex items-center justify-center`}>
+                      {isSelected && <Check size={12} />}
+                    </div>
+                    <span className="truncate">{tag.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           ) : (
             <div className="text-gray-400 text-sm py-2 text-center">
               No tags found
@@ -163,9 +165,9 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
         </div>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-[#333333]">
+      <div className="mt-4 pt-4 border-t border-[#333333]">
         <div className="flex items-center p-2 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center mr-2">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-teal-500 to-teal-400 flex items-center justify-center mr-2 shadow-sm">
             <span className="font-medium text-sm">US</span>
           </div>
           <div className="text-sm">
