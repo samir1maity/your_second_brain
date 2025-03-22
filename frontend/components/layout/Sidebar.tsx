@@ -1,6 +1,9 @@
 import { BarChart2, Home, Settings, Users, X, Tag, Search, Check } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { getAllTags } from "@/Api/tags";
+import { Tags } from "@/types/tag";
 
 export type SidebarProps = {
   sidebarOpen: boolean; 
@@ -12,22 +15,44 @@ export type SidebarProps = {
 export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagSelect }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [localSelectedTags, setLocalSelectedTags] = useState<string[]>(selectedTags);
+  const [tags, setTags] = useState<Tags[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
   
   // Hardcoded tags data
-  const hardcodedTags = [
-    { id: "1", name: "JavaScript" },
-    { id: "2", name: "React" },
-    { id: "3", name: "TypeScript" },
-    { id: "4", name: "Node.js" },
-    { id: "5", name: "CSS" },
-    { id: "6", name: "HTML" },
-    { id: "7", name: "Next.js" },
-    { id: "8", name: "Database" },
-    { id: "9", name: "API" },
-    { id: "10", name: "Frontend" },
-    { id: "11", name: "Backend" },
-    { id: "12", name: "DevOps" },
-  ];
+  // const hardcodedTags = [
+  //   { id: "1", name: "JavaScript" },
+  //   { id: "2", name: "React" },
+  //   { id: "3", name: "TypeScript" },
+  //   { id: "4", name: "Node.js" },
+  //   { id: "5", name: "CSS" },
+  //   { id: "6", name: "HTML" },
+  //   { id: "7", name: "Next.js" },
+  //   { id: "8", name: "Database" },
+  //   { id: "9", name: "API" },
+  //   { id: "10", name: "Frontend" },
+  //   { id: "11", name: "Backend" },
+  //   { id: "12", name: "DevOps" },
+  // ];
+
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (user?.jwt_token) {
+        try {
+          const tags = await getAllTags(user.jwt_token);
+          console.log(tags);
+          setTags(tags);
+          setIsLoading(false);
+        } catch (error) {
+          console.error("Error fetching tags:", error);
+        }
+      }
+    };
+
+    fetchTags();
+  }, [user]);
 
   const menuItems = [
     { icon: Home, label: "Dashboard", href: "/dashboard" },
@@ -36,7 +61,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
     { icon: Settings, label: "Settings", href: "/settings" },
   ];
 
-  const filteredTags = hardcodedTags.filter(tag => 
+  const filteredTags = tags.filter(tag => 
     tag.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -114,7 +139,7 @@ export function Sidebar({ sidebarOpen, setSidebarOpen, selectedTags = [], onTagS
             <div className="text-xs text-gray-400 mb-2">Selected tags:</div>
             <div className="flex flex-wrap gap-2">
               {localSelectedTags.map(tagId => {
-                const tag = hardcodedTags.find(t => t.id === tagId);
+                const tag = tags.find(t => t.id === tagId);
                 return tag ? (
                   <div 
                     key={tag.id} 
