@@ -65,3 +65,26 @@ export const searchContent = async (token: string, searchQuery: string, page: nu
     throw error;
   }
 };
+
+export async function getContentByTags(token: string, tags: string[], page: number = 1, limit: number = 15) {
+  try {
+    const response = await fetch(`${API_URL}/content/filter-by-tags?page=${page}&limit=${limit}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ tags })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch content by tags');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching content by tags:', error);
+    throw error;
+  }
+}

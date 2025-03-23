@@ -4,6 +4,7 @@ import {
   get,
   getOne,
   getWithPagination,
+  getContentByTagservice,
 } from "../services/content.services.js";
 import { ResponseHandler } from "../utils/responseBuilder.js";
 
@@ -54,6 +55,26 @@ export async function fetchWithPagination(
     ResponseHandler.success(res, result, 200);
   } catch (error: unknown) {
     console.log("error while get content process", error);
+    next(error);
+  }
+}
+
+export async function getContentByTags(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { tags } = req.body;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    
+    if (!Array.isArray(tags) || tags.length === 0) {
+      ResponseHandler.error(res, 400, "Tags array is required");
+      return;
+    }
+
+    // @ts-ignore
+    const result = await getContentByTagservice(req.user, tags, page, limit);
+    ResponseHandler.success(res, result, 200);
+  } catch (error) {
+    console.error("Error in getContentByTags controller:", error);
     next(error);
   }
 }

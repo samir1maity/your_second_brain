@@ -6,6 +6,8 @@ import { getEmbedding } from "../utils/generateEmbeddings.js";
 import { formatArrayAsVectorString } from "../utils/formatArrayAsVectorString.js";
 import { v4 as uuidv4 } from "uuid";
 import { handleTags } from "./tag.services.js";
+import { AppError } from "../utils/errors.js";
+// import { AppError } from "../utils/appError.js";
 
 export const post = async (data: any, user: any) => {
   try {
@@ -135,8 +137,6 @@ export const post = async (data: any, user: any) => {
   }
 };
 
-
-
 export const get = async (data: any, user: any) => {
   try {
     const { searchQuery } = data;
@@ -222,3 +222,77 @@ export const getOne = async (id: string, user: any) => {
     throw error;
   }
 };
+
+export async function getContentByTagservice(user: any, tagNames: string[], page: number = 1, limit: number = 10) {
+  try {
+    if (!user || !user.id) {
+      throw new AppError(400, "User ID is required");
+    }
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+    
+    // Get content with any of the specified tags (OR condition)
+    const content = await prisma.content.findMany({
+      where: {
+        userId: user.id,
+        tags: {
+          some: {
+            tag: {
+              name: {
+                in: tagNames
+              }
+            }
+          }
+        }
+      },
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        },
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      skip,
+      take: limit
+    });
+
+    // Count total matching records for pagination info
+    const totalCount = await prisma.content.count({
+      where: {
+        userId: user.id,
+        tags: {
+          some: {
+            tag: {
+              name: {
+                in: tagNames
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Format the response
+    const formattedContent = content.map(item => ({
+      ...item,
+      tags: item.tags.map(t => t.tag.name)
+    }));
+
+    return {
+      data: formattedContent,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        pages: Math.ceil(totalCount / limit)
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching content by tags:", error);
+    throw error;
+  }
+}
