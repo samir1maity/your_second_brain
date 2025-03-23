@@ -54,5 +54,54 @@ export async function findMany(ids:string[], user: any){
   }
 }
 
+export async function handleTags(tags: string[], user: any) {
+  try {
+    if (!user || !user.id) {
+      throw new AppError(400, "User ID is required");
+    }
+
+    // Find existing tags for this user
+    const existingTags = await prisma.tag.findMany({
+      where: {
+        userId: user.id
+      }
+    });
+
+    // Get names of existing tags in lowercase for case-insensitive comparison
+    const existingTagNames = existingTags.map(tag => tag.name.toLowerCase());
+
+    // Find which tags are new and need to be created (case-insensitive)
+    const newTagNames = tags.filter(tag => !existingTagNames.includes(tag.toLowerCase()));
+
+    // Create any new tags that don't exist yet
+    if (newTagNames.length > 0) {
+      const newTagsData = newTagNames.map(name => ({
+        name,
+        userId: user.id
+      }));
+
+      await prisma.tag.createMany({
+        data: newTagsData,
+        skipDuplicates: true
+      });
+    }
+
+    // Now get all tags (both existing and newly created)
+    const allTags = await prisma.tag.findMany({
+      where: {
+        name: {
+          in: tags
+        },
+        userId: user.id
+      }
+    });
+
+    return allTags;
+  } catch (error) {
+    console.error("Error handling tags:", error);
+    throw error;
+  }
+}
+
 
 

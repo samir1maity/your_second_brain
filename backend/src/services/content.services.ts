@@ -5,41 +5,84 @@ import { prisma } from "../db.js";
 import { getEmbedding } from "../utils/generateEmbeddings.js";
 import { formatArrayAsVectorString } from "../utils/formatArrayAsVectorString.js";
 import { v4 as uuidv4 } from "uuid";
+import { handleTags } from "./tag.services.js";
 
 export const post = async (data: any, user: any) => {
   try {
-    let metadata;
     const { url, title, contentText, tags } = data;
-    const response = await axios.get(url);
+    let metadata = {
+      title: "",
+      description: "",
+      ogTitle: "",
+      ogDescription: "",
+      ogImage: "",
+    };
+    
+    // Try to fetch and parse metadata from URL
+    try {
+      const response = await axios.get(url, {
+        timeout: 10000, // 10 second timeout
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
 
-    if (response) {
-      const html = response?.data;
-      if (!html) throw new Error("Empty HTML response");
-      const $ = load(html);
-      if (!$) throw new Error("Failed to parse HTML");
+      if (response && response.data) {
+        const html = response.data;
+        const $ = load(html);
+        
+        metadata = {
+          title: $("title").text() || "",
+          description: $('meta[name="description"]').attr("content") || "",
+          ogTitle: $('meta[property="og:title"]').attr("content") || "",
+          ogDescription: $('meta[property="og:description"]').attr("content") || "",
+          ogImage: $('meta[property="og:image"]').attr("content") || "",
+        };
+        
+        console.log("Successfully scraped metadata:", metadata);
+      }
+    } catch (scrapingError) {
+      //@ts-ignore
+      console.error("Error scraping URL:", scrapingError.message);
+    }
 
+    const userTitle = title || "Untitled";
+    const userContent = contentText || "No content provided";
+    
+    if (!metadata.title && !metadata.description && !metadata.ogTitle && !metadata.ogDescription) {
       metadata = {
-        title: $("title").text() || "",
-        description: $('meta[name="description"]').attr("content") || "",
-        ogTitle: $('meta[property="og:title"]').attr("content") || "",
-        ogDescription:
-          $('meta[property="og:description"]').attr("content") || "",
-        ogImage: $('meta[property="og:image"]').attr("content") || "",
+        ...metadata,
+        title: userTitle,
+        description: userContent
       };
     }
 
-    const { formattedData } = formatDataForEmbedding(data, metadata);
+    const { formattedData } = formatDataForEmbedding(
+      { 
+        link: url, 
+        title: userTitle, 
+        contentText: userContent, 
+        tags 
+      }, 
+      metadata
+    );
 
-    const temp = await getEmbedding(formattedData);
-    const arrayLiteral = formatArrayAsVectorString(temp);
-
+    let embedding;
+    try {
+      embedding = await getEmbedding(formattedData);
+    } catch (embeddingError) {
+      console.error("Error generating embedding:", embeddingError);
+      const fallbackData = `${userTitle} | ${userContent}`;
+      embedding = await getEmbedding(fallbackData);
+    }
+    
+    const arrayLiteral = formatArrayAsVectorString(embedding);
     const randomUuid = uuidv4();
 
     if (!randomUuid) {
-      throw new Error("ID is undefined");
+      throw new Error("Failed to generate UUID");
     }
-    console.log('array literal', arrayLiteral)
-    console.log("user", user);
+
     const result = await prisma.$executeRaw`
       INSERT INTO "Content" (
         "id",
@@ -57,45 +100,42 @@ export const post = async (data: any, user: any) => {
       VALUES (
         ${randomUuid},
         ${user.id},
-        ${title},
+        ${userTitle},
         ${url},
-        ${contentText},
+        ${userContent},
         ${metadata},
         NOW(),
         NOW(),
-        false ,
+        false,
         ${formattedData},
         ${arrayLiteral}::vector
       );
     `;
 
-      if(result){
-       const tagsData = await prisma.tag.findMany({
-          where : {
-            name:{
-              in: tags
-            }
-          }
-        })
-
-        console.log('tagsData', tagsData)
-
-        const contentTagsData = tagsData.map((tag)=>{
-          return {
-            contentId: randomUuid,
-            tagId: tag.id,
-            isAuto: false,
-          }
-        })
+    if (result && tags && tags.length > 0) {
+      const allTags = await handleTags(tags, user);
+      
+      if (allTags.length > 0) {
+        const contentTagsData = allTags.map((tag) => ({
+          contentId: randomUuid,
+          tagId: tag.id,
+          isAuto: false,
+        }));
+        
         await prisma.contentTag.createMany({
           data: contentTagsData
-        })
+        });
       }
-      return true
+    }
+    
+    return { success: true, contentId: randomUuid };
   } catch (error) {
+    console.error("Error in post content service:", error);
     throw error;
   }
 };
+
+
 
 export const get = async (data: any, user: any) => {
   try {
