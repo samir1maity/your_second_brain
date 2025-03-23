@@ -12,6 +12,7 @@ import { getContents, postContent, searchContent } from "@/Api/content";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { Loader2 } from "lucide-react";
+import { ContentShimmer } from "@/components/ui/shimmer";
 
 export default function Dashboard() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -238,29 +239,52 @@ export default function Dashboard() {
         {/* Content with padding */}
         <main className="flex-1 p-6">
           {isLoading && links.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500" />
-              <p className="mt-4 text-gray-400">Loading your content...</p>
-            </div>
+              <ContentShimmer />
           ) : links.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 bg-[#1a1a1a] rounded-lg p-8 shadow-md">
+            <div className="text-center py-10 text-gray-500 bg-[#1a1a1a] rounded-lg p-8 shadow-md lg:mx-64">
               <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                </svg>
+                {search.trim() ? (
+                  <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                ) : (
+                  <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                )}
               </div>
-              <h3 className="text-xl font-medium mb-2">No content found</h3>
+              <h3 className="text-xl font-medium mb-2">
+                {search.trim() ? "Hmm, nothing found" : "Your brain looks empty"}
+              </h3>
               <p className="mb-4">
                 {search.trim() 
-                  ? "No results found for your search" 
-                  : "No content available yet. Click 'Add Link' to get started!"}
+                  ? "Your second brain couldn't find anything matching that search. Maybe try something less specific or check your spelling?" 
+                  : "Time to feed your second brain with some knowledge! Add your first link to get started."}
               </p>
-              <Button 
-                onClick={() => setIsDialogOpen(true)}
-                className="bg-teal-600 hover:bg-teal-700"
-              >
-                Add Your First Link
-              </Button>
+              {search.trim() ? (
+                <div className="flex justify-center space-x-4">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setSearch("")}
+                    className="border-gray-700 hover:bg-gray-800"
+                  >
+                    Clear Search
+                  </Button>
+                  <Button 
+                    onClick={() => setIsDialogOpen(true)}
+                    className="bg-teal-600 hover:bg-teal-700"
+                  >
+                    Add New Link
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  onClick={() => setIsDialogOpen(true)}
+                  className="bg-teal-600 hover:bg-teal-700"
+                >
+                  Add Your First Link
+                </Button>
+              )}
             </div>
           ) : (
             <>
@@ -275,7 +299,7 @@ export default function Dashboard() {
                 className="h-10 w-full mt-6 flex justify-center"
               >
                 {isLoadingMore && (
-                  <div className="flex items-center space-x-2 text-gray-400">
+                  <div className="flex items-center space-x-2 text-gray-400 lg:pl-64">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     <span>Loading more...</span>
                   </div>
@@ -283,7 +307,7 @@ export default function Dashboard() {
               </div>
               
               {!hasMore && links.length > 0 && !isLoadingMore && (
-                <p className="text-center text-gray-500 mt-6">
+                <p className="text-center text-gray-500 mt-6 lg:pl-64">
                   You've reached the end of your content
                 </p>
               )}
