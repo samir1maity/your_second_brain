@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import { LinkGrid } from "@/components/links/LinkGrid";
@@ -10,6 +10,8 @@ import { Link } from "@/types/link";
 import { useAuth } from "@/lib/auth-context";
 import { getContents, postContent, searchContent } from "@/Api/content";
 import { Button } from "@/components/ui/button";
+import { v4 as uuidv4 } from "uuid";
+import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -18,38 +20,101 @@ export default function Dashboard() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(15);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [processingLinks, setProcessingLinks] = useState<string[]>([]);
   const { user } = useAuth();
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   const handleAddLink = async (newLink: Link) => {
     if (!user?.jwt_token) return;
+    
+    // Create a temporary ID for the new link
+    const tempId = uuidv4();
+    
+    // Create a temporary link object with processing flag
+    const tempLink: Link = {
+      ...newLink,
+      id: tempId,
+      isProcessing: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      metadata: {
+        title: newLink.title,
+        description: newLink.contentText,
+        ogImage: "",
+        ogTitle: newLink.title,
+        ogDescription: newLink.contentText
+      },
+      category: newLink.category || "uncategorized"
+    };
+    
+    // Add the temporary link to the links array
+    setLinks(prevLinks => [tempLink, ...prevLinks]);
+    
+    // Add the temp ID to processing links
+    setProcessingLinks(prev => [...prev, tempId]);
+    
+    // Close the dialog
+    setIsDialogOpen(false);
+    
     try {
-      setIsLoading(true);
-      const response = await postContent(user.jwt_token, newLink);
-      await getAllContent();
-      setIsDialogOpen(false);
+      // Post the content to the server
+      await postContent(user.jwt_token, newLink);
+      
+      // Refresh all content to get the actual data
+      resetAndFetchContent();
     } catch (error) {
       console.error("Error adding link:", error);
     } finally {
-      setIsLoading(false);
+      // Remove the temp ID from processing links
+      setProcessingLinks(prev => prev.filter(id => id !== tempId));
     }
   };
 
-  const getAllContent = useCallback(async () => {
+  const resetAndFetchContent = useCallback(() => {
+    setPage(1);
+    setLinks([]);
+    setHasMore(true);
+    getAllContent(1, true);
+  }, []);
+
+  const getAllContent = useCallback(async (pageNum = page, replace = false) => {
     if (!user?.jwt_token) return;
     
-    setIsLoading(true);
+    if (replace) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+    
     try {
-      const results = await getContents(user.jwt_token);
-      setLinks(results?.data?.posts || []);
+      const results = await getContents(user.jwt_token, pageNum, limit);
+      const newLinks = results?.data?.posts || [];
+      
+      if (newLinks.length < limit) {
+        setHasMore(false);
+      }
+      
+      if (replace) {
+        setLinks(newLinks);
+      } else {
+        setLinks(prev => [...prev, ...newLinks]);
+      }
+      
+      return newLinks.length;
     } catch (error) {
       console.error("Error fetching content:", error);
+      setHasMore(false);
+      return 0;
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [user?.jwt_token]);
+  }, [user?.jwt_token, page, limit]);
 
   const handleSearchContent = useCallback(async (searchTerm: string) => {
     if (!user?.jwt_token) return;
@@ -57,17 +122,18 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       if (!searchTerm.trim()) {
-        await getAllContent();
+        resetAndFetchContent();
         return;
       }
-      const data = await searchContent(user.jwt_token, searchTerm, page, limit);
+      const data = await searchContent(user.jwt_token, searchTerm, 1, limit);
       setLinks(data?.data || []);
+      setHasMore(false); // No pagination for search results
     } catch (error) {
       console.error("Error searching content:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.jwt_token, page, limit, getAllContent]);
+  }, [user?.jwt_token, limit, resetAndFetchContent]);
 
   const handleTagSelect = (tagId: string) => {
     setSelectedTags(prev => {
@@ -82,22 +148,54 @@ export default function Dashboard() {
   // Initial load
   useEffect(() => {
     if (user?.jwt_token) {
-      getAllContent();
+      resetAndFetchContent();
     }
-  }, [user?.jwt_token, getAllContent]);
+  }, [user?.jwt_token, resetAndFetchContent]);
 
   // Handle search with debounce
   useEffect(() => {
     const debounceTimeout = setTimeout(() => {
       if (search.trim()) {
         handleSearchContent(search);
+      } else if (user?.jwt_token) {
+        resetAndFetchContent();
       }
     }, 300); 
 
     return () => clearTimeout(debounceTimeout);
-  }, [search, handleSearchContent]);
+  }, [search, handleSearchContent, resetAndFetchContent, user?.jwt_token]);
 
-  if (!links) {
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isLoading && !isLoadingMore && !search.trim()) {
+          setPage(prevPage => prevPage + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+    
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasMore, isLoading, isLoadingMore, search]);
+
+  // Load more content when page changes
+  useEffect(() => {
+    if (page > 1 && hasMore && !search.trim()) {
+      getAllContent(page, false);
+    }
+  }, [page, hasMore, getAllContent, search]);
+
+  if (!links && isLoading) {
     return <div>loading....</div>;
   }
 
@@ -135,13 +233,13 @@ export default function Dashboard() {
         
         {/* Content with padding */}
         <main className="flex-1 p-6">
-          {isLoading ? (
+          {isLoading && links.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[400px]">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-500" />
               <p className="mt-4 text-gray-400">Loading your content...</p>
             </div>
           ) : links.length === 0 ? (
-            <div className="text-center py-10 text-gray-500 bg-[#1a1a1a] rounded-lg p-8 shadow-md lg:pt-16 lg:pl-64">
+            <div className="text-center py-10 text-gray-500 bg-[#1a1a1a] rounded-lg p-8 shadow-md">
               <div className="mb-4">
                 <svg className="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
@@ -161,7 +259,31 @@ export default function Dashboard() {
               </Button>
             </div>
           ) : (
-            <LinkGrid links={links} />
+            <>
+              <LinkGrid 
+                links={links} 
+                processingLinks={processingLinks}
+              />
+              
+              {/* Intersection observer target for infinite scroll */}
+              <div 
+                ref={observerTarget} 
+                className="h-10 w-full mt-6 flex justify-center"
+              >
+                {isLoadingMore && (
+                  <div className="flex items-center space-x-2 text-gray-400">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span>Loading more...</span>
+                  </div>
+                )}
+              </div>
+              
+              {!hasMore && links.length > 0 && !isLoadingMore && (
+                <p className="text-center text-gray-500 mt-6">
+                  You've reached the end of your content
+                </p>
+              )}
+            </>
           )}
         </main>
       </div>

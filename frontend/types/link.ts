@@ -7,7 +7,7 @@ export interface Metadata {
 }
 
 export interface Link {
-  id: number;
+  id: string;
   title: string;
   url: string;
   description: string;
@@ -17,4 +17,5 @@ export interface Link {
   createdAt: string;
   updatedAt: string;
   contentText: string;  
+  isProcessing?: boolean;
 }

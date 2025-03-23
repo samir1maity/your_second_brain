@@ -24,9 +24,9 @@ export const postContent = async (token: string, data: any) => {
   }
 };
 
-export const getContents = async (token: string) => {
+export const getContents = async (token: string, page = 1, limit = 15) => {
   try {
-    const response = await fetch(`${API_URL}${URL_PREFIX}/all`, {
+    const response = await fetch(`${API_URL}${URL_PREFIX}/all?page=${page}&limit=${limit}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -40,7 +40,7 @@ export const getContents = async (token: string) => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error while posting content:", error);
+    console.error("Error while fetching content:", error);
     throw error;
   }
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Bookmark, Clock } from "lucide-react";
+import { ExternalLink, Bookmark, Clock, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,10 @@ import { useState } from "react";
 
 interface LinkCardProps {
   link: Link;
+  isProcessing?: boolean;
 }
 
-export function LinkCard({ link }: LinkCardProps) {
+export function LinkCard({ link, isProcessing = false }: LinkCardProps) {
   const [imageError, setImageError] = useState(false);
   const fallbackImage = 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop';
   
@@ -30,7 +31,7 @@ export function LinkCard({ link }: LinkCardProps) {
   };
 
   return (
-    <Card className="group overflow-hidden border-0 bg-[#1a1a1a] shadow-md hover:shadow-lg transition-all duration-300">
+    <Card className={`group overflow-hidden border-0 bg-[#1a1a1a] shadow-md hover:shadow-lg transition-all duration-300 ${isProcessing ? 'opacity-80' : ''}`}>
       <div className="relative aspect-video overflow-hidden bg-[#111]">
         <Image
           src={link?.metadata?.ogImage && !imageError ? link.metadata.ogImage : fallbackImage}
@@ -40,6 +41,16 @@ export function LinkCard({ link }: LinkCardProps) {
           onError={() => setImageError(true)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-80" />
+        
+        {isProcessing && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+            <Badge className="bg-yellow-600 text-white px-2 py-1 flex items-center gap-1">
+              <RefreshCw className="h-3 w-3 animate-spin" />
+              Processing
+            </Badge>
+          </div>
+        )}
+        
         <Button
           size="icon"
           variant="ghost"
