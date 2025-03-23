@@ -1,125 +1,139 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { HexColorPicker } from "react-colorful"
-import { X, Plus, Check } from "lucide-react"
-
-interface Tag {
-  name: string
-  color: string
-}
-
-const predefinedTags: Tag[] = [
-  { name: "Technology", color: "#ff6b6b" },
-  { name: "Programming", color: "#4ecdc4" },
-]
+import { X, Plus, Loader2, Tag } from "lucide-react"
+import { useAuth } from "@/lib/auth-context"
+import { getAllTags } from "@/Api/tags"
 
 interface TagSelectorProps {
   selectedTags: string[]
-  setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>
+  setSelectedTags: (tags: string[]) => void
 }
 
 export function TagSelector({ selectedTags, setSelectedTags }: TagSelectorProps) {
-  const [newTagName, setNewTagName] = useState("")
-  const [newTagColor, setNewTagColor] = useState("#000000")
-  const [customTags, setCustomTags] = useState<Tag[]>([])
+  const [newTag, setNewTag] = useState("")
+  const [existingTags, setExistingTags] = useState<Array<{ id: string; name: string }>>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
 
-  const addTag = (tag: Tag) => {
-    if (!selectedTags.includes(tag.name)) {
-      setSelectedTags([...selectedTags, tag.name])
+  // Fetch existing tags only once when component mounts
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (user?.jwt_token) {
+        try {
+          setIsLoading(true)
+          const tags = await getAllTags(user.jwt_token)
+          setExistingTags(tags || [])
+        } catch (error) {
+          console.error("Error fetching tags:", error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    fetchTags()
+  }, [user?.jwt_token])
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !selectedTags.includes(newTag.trim())) {
+      setSelectedTags([...selectedTags, newTag.trim()])
+      setNewTag("")
     }
   }
 
-  const removeTag = (tagName: string) => {
-    setSelectedTags(selectedTags.filter((tag) => tag !== tagName))
-  }
-
-  const createCustomTag = () => {
-    if (newTagName && !selectedTags.includes(newTagName)) {
-      const newTag = { name: newTagName, color: newTagColor }
-      setCustomTags([...customTags, newTag])
-      setSelectedTags([...selectedTags, newTagName])
-      setNewTagName("")
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleAddTag()
     }
   }
 
-  const allTags = [...predefinedTags, ...customTags]
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags(selectedTags.filter((t) => t !== tag))
+  }
+
+  const handleSelectExistingTag = (tagName: string) => {
+    if (!selectedTags.includes(tagName)) {
+      setSelectedTags([...selectedTags, tagName])
+    }
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-background rounded-md border border-input">
-        {selectedTags.map((tag) => {
-          const tagObj = allTags.find((t) => t.name === tag)
-          return (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="text-sm py-1 px-2 flex items-center gap-1"
-              style={{ backgroundColor: tagObj?.color, color: "#000" }}
-            >
-              {tag}
-              <X
-                className="h-3 w-3 cursor-pointer hover:text-gray-200 transition-colors"
-                onClick={() => removeTag(tag)}
-              />
-            </Badge>
-          )
-        })}
-        {selectedTags.length === 0 && <span className="text-sm text-gray-400">No tags selected</span>}
+    <div className="space-y-3">
+      {/* Input for new tags */}
+      <div className="flex space-x-2">
+        <Input
+          placeholder="Add a tag..."
+          value={newTag}
+          onChange={(e) => setNewTag(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="flex-1"
+        />
+        <Button 
+          type="button" 
+          onClick={handleAddTag} 
+          size="sm"
+          variant="outline"
+          disabled={!newTag.trim()}
+        >
+          <Plus size={16} className="mr-1" />
+          Add
+        </Button>
       </div>
+
+      {/* Selected tags */}
+      {selectedTags.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-gray-400">Selected tags:</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedTags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="px-2 py-1 flex items-center gap-1">
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="text-gray-400 hover:text-gray-200 rounded-full"
+                >
+                  <X size={14} />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Existing tags */}
       <div className="space-y-2">
-        <h4 className="text-sm font-medium text-gray-300">Available Tags</h4>
-        <div className="flex flex-wrap gap-2">
-          {allTags.map((tag) => {
-            const isSelected = selectedTags.includes(tag.name)
-            return (
-              <Button
-                key={tag.name}
-                variant="outline"
-                size="sm"
-                className={`text-xs hover:!bg-transparent hover:!text-inherit font-normal`}
-                style={{
-                  borderColor: tag.color,
-                  color: tag.color,
-                }}
-                onClick={() => addTag(tag)}
+        <p className="text-xs text-gray-400">Your existing tags:</p>
+        {isLoading ? (
+          <div className="flex items-center justify-center p-4 bg-[#1a1a1a] rounded-md">
+            <Loader2 className="h-4 w-4 animate-spin mr-2 text-gray-400" />
+            <span className="text-sm text-gray-400">Loading tags...</span>
+          </div>
+        ) : existingTags.length > 0 ? (
+          <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 bg-[#1a1a1a] rounded-md custom-scrollbar">
+            {existingTags.map((tag) => (
+              <Badge 
+                key={tag.id} 
+                variant={selectedTags.includes(tag.name) ? "default" : "outline"}
+                className="cursor-pointer hover:bg-[#252525] transition-colors"
+                onClick={() => handleSelectExistingTag(tag.name)}
               >
                 {tag.name}
-                {isSelected && <Check className="ml-1 h-3 w-3" />}
-              </Button>
-            )
-          })}
-        </div>
-      </div>
-      <div className="pt-4 border-gray-200">
-        <h4 className="text-sm font-medium text-gray-300 mb-2">Create Custom Tag</h4>
-        <div className="flex items-center space-x-2">
-          <Input
-            type="text"
-            value={newTagName}
-            onChange={(e) => setNewTagName(e.target.value)}
-            placeholder="New tag name"
-            className="flex-grow text-sm"
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="w-[80px]" style={{ backgroundColor: newTagColor }}>
-                <span className="sr-only">Pick color</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <HexColorPicker color={newTagColor} onChange={setNewTagColor} />
-            </PopoverContent>
-          </Popover>
-          <Button size="sm" onClick={createCustomTag} disabled={!newTagName}>
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-4 bg-[#1a1a1a] rounded-md text-center">
+            <Tag className="h-5 w-5 text-gray-400 mb-2" />
+            <p className="text-sm text-gray-400">No existing tags found</p>
+            <p className="text-xs text-gray-500 mt-1">Create your first tag using the input above</p>
+          </div>
+        )}
       </div>
     </div>
   )

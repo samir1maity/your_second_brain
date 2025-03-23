@@ -1,26 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TagSelector } from "../tags/TagSelector";
+import { Loader2 } from "lucide-react";
 
 interface AddLinkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (link: any) => void;
+  isLoading?: boolean;
 }
 
 export default function AddLinkDialog({
   open,
   onOpenChange,
   onAdd,
+  isLoading = false,
 }: AddLinkDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
@@ -31,12 +35,14 @@ export default function AddLinkDialog({
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onAdd({
-      ...formData,
-      tags: selectedTags,
-    });
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+  }, [open]);
+
+  const resetForm = () => {
     setFormData({
       title: "",
       url: "",
@@ -44,6 +50,16 @@ export default function AddLinkDialog({
       category: "",
       tags: []
     });
+    setSelectedTags([]);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAdd({
+      ...formData,
+      tags: selectedTags,
+    });
+    // Form will be reset when dialog closes via the useEffect
   };
 
   return (
@@ -76,7 +92,7 @@ export default function AddLinkDialog({
           </div>
           <div className="space-y-2">
             <Input
-              placeholder="description"
+              placeholder="Description"
               value={formData.contentText}
               onChange={(e) =>
                 setFormData({ ...formData, contentText: e.target.value })
@@ -93,12 +109,21 @@ export default function AddLinkDialog({
               setSelectedTags={setSelectedTags}
             />
           </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter>
+            <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit">Add Link</Button>
-          </div>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                "Add Link"
+              )}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
