@@ -30,6 +30,7 @@ import { getAllTags } from "@/Api/tags";
 import { Tags } from "@/types/tag";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import Logo from "../Landing/logo";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -110,7 +111,7 @@ export function Sidebar({
       <div className="flex flex-col h-full">
         {/* Sidebar header */}
         <div className="flex items-center justify-between p-4 border-b border-[#232323]">
-          <h2 className="text-xl font-semibold text-white">Your2ndBrain</h2>
+          <Logo />
           <Button
             variant="ghost"
             size="icon"

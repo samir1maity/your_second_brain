@@ -1,68 +1,229 @@
-"use client"
+"use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { WavesIcon } from "lucide-react";
-import { useState } from "react";
-import { userSignup } from "@/Api/user";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Brain, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
+import { userSignup } from '@/Api/user';
 
-export default function SignupPage() {
-
-  const [email, setEmail] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
-
-  async function handleSignup(){
-    await userSignup(email, password)
-  }
-
+const SignUp = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const router = useRouter();
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!agreeToTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy');
+      return;
+    }
+    
+    setError('');
+    setIsLoading(true);
+    
+    try {
+      await userSignup(email, password);
+      toast.success("Account created successfully! 🎉");
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Registration failed", error);
+      setError(error?.message || "Failed to create account. Please try again.");
+      toast.error("Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-slate-50 p-4">
-      <div className="flex w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="hidden w-1/2 bg-blue-600 p-10 lg:flex flex-col items-center justify-center text-center text-white">
-          <h2 className="mb-4 text-2xl font-bold">New Scheduling And Routing Options</h2>
-          <p className="mb-8 text-blue-100">We just updated the format of products and rewards.</p>
-          <Image
-            src="/placeholder.svg"
-            alt="Scheduling Interface"
-            width={400}
-            height={400}
-            className="mx-auto"
-            priority
-          />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden py-10 px-4">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-grid -z-10"></div>
+      <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow -z-10"></div>
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-accent/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow -z-10"></div>
+      
+      <div className="w-full max-w-md">
+        <div className="flex justify-start mb-6">
+          <Link href="/" className="flex items-center text-foreground/70 hover:text-primary transition-colors">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            <span>Back to home</span>
+          </Link>
         </div>
-        <div className="w-full p-8 lg:w-1/2">
-          <div className="mx-auto max-w-md space-y-6">
-            <div className="flex flex-col items-center space-y-2 text-center">
-              <div className="rounded-full bg-blue-50 p-2">
-                <WavesIcon className="h-6 w-6 text-blue-600" />
-              </div>
-              <h1 className="text-2xl font-semibold text-gray-900">Create an Account</h1>
-              <p className="text-sm text-gray-500">Join us to get started.</p>
+        
+        <Card className="glass-card border-white/5 animate-fade-in">
+          <CardHeader className="space-y-1 flex flex-col items-center">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
+              <Brain className="h-6 w-6 text-primary" />
             </div>
-            <div className="space-y-4">
-              <Input type="text" placeholder="Name" />
-              <Input type="email" placeholder="Email" value={email} onChange={(e)=> setEmail(e.target.value)}/>
-              <div className="space-y-2">
-                <Input type="password" placeholder="Password" value={password} onChange={(e)=>setPassword(e.target.value)}/>
+            <CardTitle className="text-2xl">Create Account</CardTitle>
+            <CardDescription>
+              Start organizing your second brain today
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            {error && (
+              <div className="p-3 text-sm bg-destructive/10 border border-destructive/20 rounded-md text-destructive">
+                {error}
               </div>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700" size="lg" onClick={handleSignup}>Sign Up</Button>
-              <div className="relative flex items-center justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">or</span>
+            )}
+            
+            <form onSubmit={handleSubmit}>
+              <div className="grid gap-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="first-name">First Name</Label>
+                    <Input
+                      id="first-name"
+                      type="text"
+                      placeholder="John"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                      className="bg-background/50 border-white/10"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="last-name">Last Name</Label>
+                    <Input
+                      id="last-name"
+                      type="text"
+                      placeholder="Doe"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                      className="bg-background/50 border-white/10"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-background/50 border-white/10"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="bg-background/50 border-white/10"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="terms" 
+                    checked={agreeToTerms}
+                    onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="terms" className="text-sm">
+                    I agree to the{" "}
+                    <Link href="/terms" className="text-primary hover:underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-primary hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </Label>
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full button-glow"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
               </div>
-              <Button variant="outline" className="w-full" size="lg">
-                <Image src="https://www.google.com/favicon.ico" alt="Google" width={20} height={20} className="mr-2" />
-                Sign up with Google
+            </form>
+            
+            <div className="space-y-3 mt-2">
+              <div className="flex items-center text-sm text-foreground/70">
+                <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                <span>Free to start, no credit card required</span>
+              </div>
+              <div className="flex items-center text-sm text-foreground/70">
+                <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                <span>Store up to 100 items in the free plan</span>
+              </div>
+              <div className="flex items-center text-sm text-foreground/70">
+                <CheckCircle className="h-4 w-4 text-primary mr-2" />
+                <span>Advanced AI processing on all plans</span>
+              </div>
+            </div>
+            
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-card px-2 text-foreground/60">Or continue with</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <Button 
+                variant="outline" 
+                className="border-white/10 bg-background/50"
+                disabled={isLoading}
+              >
+                Google
+              </Button>
+              <Button 
+                variant="outline" 
+                className="border-white/10 bg-background/50"
+                disabled={isLoading}
+              >
+                GitHub
               </Button>
             </div>
-            <div className="text-center text-sm text-gray-500">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">Login</Link>
+          </CardContent>
+          <CardFooter className="justify-center">
+            <div className="text-sm text-foreground/70">
+              Already have an account?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                Sign in
+              </Link>
             </div>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
-}
+};
+
+export default SignUp;

@@ -4,34 +4,34 @@
 
 @layer base {
   :root {
-    --background: 0, 0%, 5%;
-    --foreground: 0 0% 92%;
-    
-    --card: 0 0% 8%;
-    --card-foreground: 0 10% 85%;
-    
-    --popover: 0, 0%, 9%;
+    --background: 230 20% 6%;
+    --foreground: 220 10% 98%;
+
+    --card: 230 20% 8%;
+    --card-foreground: 220 10% 98%;
+
+    --popover: 230 20% 8%;
     --popover-foreground: 220 10% 98%;
-    
-    --primary: 220 10% 98%;
-    --primary-foreground: 220 35% 15%;
-    
-    --secondary: 220 25% 18%;
+
+    --primary: 210 100% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 220 10% 15%;
     --secondary-foreground: 220 10% 98%;
-    
-    --muted: 0 0% 7%;
-    --muted-foreground: 220, 10%, 65%;
-    
-    --accent: 220 10% 98%;
-    --accent-foreground: 220 35% 15%;
-    
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 0 0% 20%;
-    --input: 0 0% 17%;
-    --ring: 0 0% 30%;
-    
+
+    --muted: 220 10% 15%;
+    --muted-foreground: 220 10% 65%;
+
+    --accent: 210 100% 56%;
+    --accent-foreground: 220 10% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 230 20% 18%;
+    --input: 230 20% 15%;
+    --ring: 210 100% 60%;
+
     --radius: 0.75rem;
     
     --sidebar-background: 240 5.9% 10%;
@@ -90,14 +90,92 @@
   }
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
+} */
+
+@layer base {
+  * {
+    @apply border-border selection:bg-accent/10 selection:text-accent;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
 }
+
+@layer utilities {
+  .glass-card {
+    @apply bg-secondary/30 backdrop-blur-xl border border-white/5 shadow-lg;
+  }
+  
+  .glass-panel {
+    @apply bg-secondary/40 backdrop-blur-lg border border-white/10;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-br from-primary via-primary/90 to-accent bg-clip-text text-transparent;
+  }
+  
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .hover-card {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10;
+  }
+  
+  .animate-delay-1 {
+    animation-delay: 0.1s;
+  }
+  
+  .animate-delay-2 {
+    animation-delay: 0.2s;
+  }
+  
+  .animate-delay-3 {
+    animation-delay: 0.3s;
+  }
+  
+  .animate-delay-4 {
+    animation-delay: 0.4s;
+  }
+  
+  .animate-delay-5 {
+    animation-delay: 0.5s;
+  }
+  
+  .bg-grid {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  
+  .gradient-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .button-glow {
+    box-shadow: 0 0 15px rgba(80, 160, 255, 0.5);
+    transition: all 0.3s ease;
+  }
+  
+  .button-glow:hover {
+    box-shadow: 0 0 20px rgba(80, 160, 255, 0.7);
+  }
+}
+
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
@@ -116,3 +194,4 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
