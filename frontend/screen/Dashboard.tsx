@@ -135,14 +135,18 @@ export default function Dashboard() {
     }
   }, [user?.jwt_token, limit, resetAndFetchContent]);
 
-  const handleTagSelect = (tagId: string) => {
-    setSelectedTags(prev => {
-      if (prev.includes(tagId)) {
-        return prev.filter(id => id !== tagId);
-      } else {
-        return [...prev, tagId];
-      }
-    });
+  const handleTagSelect = (tagId: string | null) => {
+    if (tagId === null) {
+      // Clear all selected tags logic
+      setSelectedTags([]);
+    } else {
+      // Existing logic for selecting a tag
+      setSelectedTags(prev => 
+        prev.includes(tagId) 
+          ? prev.filter(id => id !== tagId) 
+          : [...prev, tagId]
+      );
+    }
   };
 
   // Initial load
