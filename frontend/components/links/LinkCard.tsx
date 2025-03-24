@@ -51,13 +51,13 @@ export function LinkCard({ link, isProcessing = false }: LinkCardProps) {
           </div>
         )}
         
-        <Button
+        {/* <Button
           size="icon"
           variant="ghost"
           className="absolute top-2 right-2 bg-black/30 hover:bg-black/50 text-white"
         >
           <Bookmark className="h-4 w-4" />
-        </Button>
+        </Button> */}
         
         <div className="absolute bottom-2 left-2 flex items-center text-xs text-gray-300">
           <Clock className="h-3 w-3 mr-1" />
@@ -78,7 +78,7 @@ export function LinkCard({ link, isProcessing = false }: LinkCardProps) {
           </a>
         </div>
         <p className="mt-2 text-sm text-gray-400 line-clamp-2">
-          {link.metadata?.description || link.contentText || "No description available"}
+          { link.contentText || "No description available"}
         </p>
       </CardContent>
 

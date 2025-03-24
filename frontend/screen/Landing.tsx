@@ -18,6 +18,7 @@ import {
   Database
 } from 'lucide-react';
 import Link from 'next/link';
+import HeroAnimation from '@/components/Landing/hero-animation';
 
 const Index = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -58,95 +59,44 @@ const Index = () => {
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-accent/20 rounded-full filter blur-3xl opacity-30 animate-pulse-slow"></div>
         
         <div className="container mx-auto relative z-10">
-          <div className="flex flex-col items-center text-center mb-12 md:mb-16">
-            <div className="flex items-center px-4 py-2 bg-secondary/40 backdrop-blur-md rounded-full mb-6 border border-white/5">
-              <span className="text-xs md:text-sm text-foreground/70">Powered by AI + Vector Embeddings</span>
-              <div className="w-2 h-2 bg-primary rounded-full ml-3 mr-1 animate-pulse"></div>
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 text-shadow">
-              Your <span className="text-gradient">Second Brain</span> <br />
-              for Everything
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-foreground/70 max-w-3xl leading-relaxed mb-8">
-              Save content from anywhere, find it instantly with context-based search, 
-              powered by advanced AI and vector embeddings.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <Button className="button-glow text-lg py-6 px-8" size="lg" asChild>
-                <Link href="/signup">Get Started Free</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg py-6 px-8 border-white/10" asChild>
-                <Link href="/#how-it-works" className="flex items-center gap-2">
-                  See How It Works <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-          
-          {/* Hero Image/Animation */}
-          <div className="relative max-w-5xl mx-auto">
-            <div className="w-full aspect-[16/9] rounded-xl glass-card p-1 overflow-hidden shadow-2xl shadow-primary/10">
-              <div className="w-full h-full rounded-lg bg-background/90 p-4 flex items-center justify-center">
-                {/* Simplified Brain Interface Animation */}
-                <div className="relative w-full max-w-2xl h-64 animate-float">
-                  <div className="absolute inset-0 bg-primary/5 rounded-2xl"></div>
-                  
-                  {/* Content nodes */}
-                  <div className="absolute top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2 bg-primary/20 p-3 rounded-xl animate-pulse-slow">
-                    <FileText className="h-8 w-8 text-primary" />
-                  </div>
-                  
-                  <div className="absolute top-2/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 bg-secondary p-3 rounded-xl animate-pulse-slow" style={{ animationDelay: '0.5s' }}>
-                    <Folder className="h-8 w-8 text-primary" />
-                  </div>
-                  
-                  <div className="absolute top-1/3 right-1/4 transform translate-x-1/2 -translate-y-1/2 bg-accent/20 p-3 rounded-xl animate-pulse-slow" style={{ animationDelay: '1s' }}>
-                    <MessageSquare className="h-8 w-8 text-accent" />
-                  </div>
-                  
-                  <div className="absolute bottom-1/4 right-1/3 transform translate-x-1/2 translate-y-1/2 bg-secondary p-3 rounded-xl animate-pulse-slow" style={{ animationDelay: '1.5s' }}>
-                    <Bookmark className="h-8 w-8 text-primary" />
-                  </div>
-                  
-                  {/* Central brain node */}
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-primary/80 to-accent/80 p-5 rounded-full shadow-lg shadow-primary/20 button-glow">
-                    <Brain className="h-12 w-12 text-white" />
-                  </div>
-                  
-                  {/* Connection lines */}
-                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 200">
-                    <line x1="100" y1="50" x2="200" y2="100" stroke="rgba(80, 160, 255, 0.3)" strokeWidth="2" />
-                    <line x1="120" y1="140" x2="200" y2="100" stroke="rgba(80, 160, 255, 0.3)" strokeWidth="2" />
-                    <line x1="300" y1="60" x2="200" y2="100" stroke="rgba(80, 160, 255, 0.3)" strokeWidth="2" />
-                    <line x1="280" y1="150" x2="200" y2="100" stroke="rgba(80, 160, 255, 0.3)" strokeWidth="2" />
-                  </svg>
-                </div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-12">
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left lg:w-1/2">
+              <div className="flex items-center px-4 py-2 bg-secondary/40 backdrop-blur-md rounded-full mb-6 border border-white/5">
+                <span className="text-xs md:text-sm text-foreground/70">Powered by AI + AI-powered contextual search</span>
+                <div className="w-2 h-2 bg-primary rounded-full ml-3 mr-1 animate-pulse"></div>
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 text-shadow">
+                Your <span className="text-gradient">Second Brain</span> <br />
+                for Everything
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-foreground/70 max-w-3xl leading-relaxed mb-8">
+                Save content from anywhere, find it instantly with context-based search, 
+                powered by advanced AI and vector embeddings.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                <Button className="button-glow text-lg py-6 px-8" size="lg" asChild>
+                  <Link href="/signup">Get Started Free</Link>
+                </Button>
+                <Button size="lg" variant="outline" className="text-lg py-6 px-8 border-white/10" asChild>
+                  <Link href="/#how-it-works" className="flex items-center gap-2">
+                    See How It Works <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
             </div>
-            
-            {/* Annotations */}
-            <div className="absolute -bottom-14 left-10 glass-card p-3 rounded-lg shadow-lg backdrop-blur-md border border-white/10 animate-fade-in animate-delay-3">
-              <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-primary" />
-                <span className="text-sm">AI-powered contextual search</span>
-              </div>
-            </div>
-            
-            <div className="absolute -right-4 top-1/3 glass-card p-3 rounded-lg shadow-lg backdrop-blur-md border border-white/10 animate-fade-in animate-delay-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <span className="text-sm">Vector embeddings</span>
-              </div>
+
+            <div className="lg:w-1/2 mt-8 lg:mt-0 flex items-center justify-center sm:p-5">
+              <HeroAnimation />
             </div>
           </div>
         </div>
       </section>
       
       {/* Features Section */}
-      <section id="features" className="py-20 bg-background">
+      <section id="features" className="py-20 bg-background px-5">
         <div className="container mx-auto">
           <div className="text-center mb-16 animate-on-scroll">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Unlock the Power of Your <span className="text-gradient">Second Brain</span></h2>
@@ -238,7 +188,7 @@ const Index = () => {
       </section>
       
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-background gradient-dots">
+      <section id="how-it-works" className="py-20 bg-background gradient-dots px-5">
         <div className="container mx-auto">
           <div className="text-center mb-16 animate-on-scroll">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How Your <span className="text-gradient">Second Brain</span> Works</h2>
