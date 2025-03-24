@@ -8,27 +8,26 @@ import { v4 as uuidv4 } from "uuid";
 import { handleTags } from "./tag.services.js";
 import { AppError } from "../utils/errors.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-// import { AppError } from "../utils/appError.js";
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-// Function to analyze search results with Gemini
 async function analyzeSearchResultsWithGemini(searchQuery: string, results: any[]) {
   try {
     if (!results || results.length === 0) return [];
     
-    // Format the results for Gemini
     const formattedResults = results.map((item, index) => {
       return `Result ${index + 1}:
         Title: ${item.title}
-        Content: ${item.contentText?.substring(0, 300)}...
-        Similarity Score: ${item.similarity}`;
-            }).join('\n\n');
-            
-            // Create the prompt for Gemini
-            const prompt = `
+        Content: ${item.contentText}
+        Similarity Score: ${item.similarity}
+        Context: ${item.metadata.description}
+        Description: ${item.metadata.ogDescription}
+        metaData Title: ${item.metadata.title}`;
+    }).join('\n\n');
+
+    const prompt = `
         I have a search query: "${searchQuery}"
 
         And these are the search results with their vector similarity scores:
@@ -44,18 +43,34 @@ async function analyzeSearchResultsWithGemini(searchQuery: string, results: any[
     const response = result.response;
     const text = response.text();
     
+    // Clean the response text to extract just the JSON array
+    const cleanedText = text.replace(/```json|```|\[|\]/g, '').trim();
+    const jsonArrayText = `[${cleanedText}]`;
+    console.log('jsonArrayText -->', jsonArrayText)
+    
     // Parse the JSON response
     try {
-      const relevantIndices = JSON.parse(text);
+      const relevantIndices = JSON.parse(jsonArrayText);
       if (Array.isArray(relevantIndices)) {
         // Return the filtered and reordered results
         return relevantIndices.map(index => results[index]).filter(Boolean);
       }
     } catch (parseError) {
       console.error("Error parsing Gemini response:", parseError);
+      
+      // Alternative parsing approach
+      try {
+        // Try to extract numbers directly using regex
+        const numbersArray = text.match(/\d+/g);
+        if (numbersArray && numbersArray.length > 0) {
+          const indices = numbersArray.map(Number);
+          return indices.map(index => results[index]).filter(Boolean);
+        }
+      } catch (regexError) {
+        console.error("Error with regex parsing:", regexError);
+      }
     }
     
-    // Fallback to original results if parsing fails
     return results;
   } catch (error) {
     console.error("Error analyzing results with Gemini:", error);
@@ -220,8 +235,7 @@ export const get = async (data: any, user: any) => {
       ORDER BY similarity DESC
       LIMIT 10
     `;
-    
-    // Use Gemini to analyze and rerank the results
+
     const enhancedResults = await analyzeSearchResultsWithGemini(
       searchQuery, 
       Array.isArray(initialResults) ? initialResults : []
