@@ -8,11 +8,13 @@ import AddLinkDialog from "@/components/links/AddLinkDialog";
 // import { initialLinks } from "@/lib/data";
 import { Link } from "@/types/link";
 import { useAuth } from "@/lib/auth-context";
-import { getContents, postContent, searchContent } from "@/Api/content";
+import { getContents, postContent, searchContent, getContentByTags } from "@/Api/content";
 import { Button } from "@/components/ui/button";
 import { v4 as uuidv4 } from "uuid";
 import { Loader2 } from "lucide-react";
 import { ContentShimmer } from "@/components/ui/shimmer";
+import { Tags } from "@/types/tag";
+import { getAllTags } from "@/Api/tags";
 
 export default function Dashboard() {
   const [links, setLinks] = useState<Link[]>([]);
@@ -29,6 +31,7 @@ export default function Dashboard() {
   const [processingLinks, setProcessingLinks] = useState<string[]>([]);
   const { user } = useAuth();
   const observerTarget = useRef<HTMLDivElement>(null);
+  const [tags, setTags] = useState<Tags[]>([]);
 
   const handleAddLink = async (newLink: Link) => {
     if (!user?.jwt_token) return;
@@ -136,19 +139,75 @@ export default function Dashboard() {
     }
   }, [user?.jwt_token, limit, resetAndFetchContent]);
 
-  const handleTagSelect = (tagId: string | null) => {
-    if (tagId === null) {
-      // Clear all selected tags logic
-      setSelectedTags([]);
-    } else {
-      // Existing logic for selecting a tag
-      setSelectedTags(prev => 
-        prev.includes(tagId) 
-          ? prev.filter(id => id !== tagId) 
-          : [...prev, tagId]
-      );
+  const fetchContentByTags = useCallback(async (tagNames: string[], pageNum = 1, replace = false) => {
+    if (!user?.jwt_token || tagNames.length === 0) {
+      // If no tags selected, fetch all content
+      return resetAndFetchContent();
     }
-  };
+    
+    if (replace) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+    
+    try {
+      const results = await getContentByTags(user.jwt_token, tagNames, pageNum, limit);
+      const newLinks = results?.data?.data || [];
+      const pagination = results?.data?.pagination || {};
+      
+      if (newLinks.length < limit || pageNum >= pagination.pages) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+      
+      if (replace) {
+        setLinks(newLinks);
+      } else {
+        setLinks(prev => [...prev, ...newLinks]);
+      }
+      
+      return newLinks.length;
+    } catch (error) {
+      console.error("Error fetching content by tags:", error);
+      setHasMore(false);
+      return 0;
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [user?.jwt_token, limit, resetAndFetchContent]);
+
+  const handleTagSelect = useCallback((tagId: string | null) => {
+    if (tagId === null) {
+      // Clear all selected tags
+      setSelectedTags([]);
+      resetAndFetchContent();
+    } else {
+      // Toggle the selected tag
+      const newSelectedTags = selectedTags.includes(tagId)
+        ? selectedTags.filter(id => id !== tagId)
+        : [...selectedTags, tagId];
+      
+      setSelectedTags(newSelectedTags);
+      
+      // If we have tags selected, fetch filtered content
+      if (newSelectedTags.length > 0) {
+        // Get the tag names from the tag IDs
+        const tagNames = newSelectedTags.map(id => {
+          const tag = tags.find(t => t.id === id);
+          return tag ? tag.name : '';
+        }).filter(name => name !== '');
+        
+        setPage(1); // Reset pagination
+        fetchContentByTags(tagNames, 1, true);
+      } else {
+        // If no tags selected, fetch all content
+        resetAndFetchContent();
+      }
+    }
+  }, [selectedTags, tags, fetchContentByTags, resetAndFetchContent]);
 
   // Initial load
   useEffect(() => {
@@ -196,9 +255,35 @@ export default function Dashboard() {
   // Load more content when page changes
   useEffect(() => {
     if (page > 1 && hasMore && !search.trim()) {
-      getAllContent(page, false);
+      if (selectedTags.length > 0) {
+        // Get the tag names from the tag IDs
+        const tagNames = selectedTags.map(id => {
+          const tag = tags.find(t => t.id === id);
+          return tag ? tag.name : '';
+        }).filter(name => name !== '');
+        
+        fetchContentByTags(tagNames, page, false);
+      } else {
+        getAllContent(page, false);
+      }
     }
-  }, [page, hasMore, getAllContent, search]);
+  }, [page, hasMore, getAllContent, fetchContentByTags, selectedTags, tags, search]);
+
+  // Fetch tags when the component mounts
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (user?.jwt_token) {
+        try {
+          const fetchedTags = await getAllTags(user.jwt_token);
+          setTags(fetchedTags);
+        } catch (error) {
+          console.error("Error fetching tags:", error);
+        }
+      }
+    };
+
+    fetchTags();
+  }, [user?.jwt_token]);
 
   if (!links && isLoading) {
     return <div>loading....</div>;

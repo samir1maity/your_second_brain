@@ -68,7 +68,7 @@ export const searchContent = async (token: string, searchQuery: string, page: nu
 
 export async function getContentByTags(token: string, tags: string[], page: number = 1, limit: number = 15) {
   try {
-    const response = await fetch(`${API_URL}/content/filter-by-tags?page=${page}&limit=${limit}`, {
+    const response = await fetch(`${API_URL}${URL_PREFIX}/filter-by-tags?page=${page}&limit=${limit}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
