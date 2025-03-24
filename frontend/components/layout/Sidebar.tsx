@@ -8,11 +8,8 @@ import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
 import { 
   X, 
-  Home, 
   Search, 
   Tag, 
-  Archive, 
-  Settings, 
   LogOut,
   User,
   Check,
@@ -33,7 +30,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import Logo from "../Landing/logo";
 
 interface SidebarProps {
-  sidebarOpen: boolean;
+  sidebarOpen: boolean; 
   setSidebarOpen: (open: boolean) => void;
   selectedTags: string[];
   onTagSelect: (tagId: string | null) => void;
@@ -105,7 +102,7 @@ export function Sidebar({
     <div
       className={cn(
         "fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-[#232323] transition-transform duration-300 ease-in-out transform",
-        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}
     >
       <div className="flex flex-col h-full">
@@ -203,7 +200,7 @@ export function Sidebar({
                   filteredTags.map((tag) => {
                     const isSelected = localSelectedTags.includes(tag.id);
                     return (
-                      <button
+        <button
                         key={tag.id}
                         onClick={() => handleTagToggle(tag.id)}
                         className={cn(
@@ -220,7 +217,7 @@ export function Sidebar({
                           {isSelected && <Check className="h-3 w-3" />}
                         </div>
                         <span className="truncate">{tag.name}</span>
-                      </button>
+        </button>
                     );
                   })
                 ) : (
@@ -231,8 +228,8 @@ export function Sidebar({
               </div>
             </CollapsibleContent>
           </Collapsible>
-        </div>
-        
+      </div>
+
         {/* User profile and logout section */}
         <div className="p-4 border-t border-[#232323]">
           <DropdownMenu>

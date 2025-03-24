@@ -13,7 +13,7 @@ export interface Link {
   description: string;
   tags?: string[];
   category: string;
-  metadata: Metadata;
+  metadata?: Metadata;
   createdAt: string;
   updatedAt: string;
   contentText: string;  

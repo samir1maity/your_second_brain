@@ -16,8 +16,6 @@ interface TopBarProps {
 export function TopBar({
   search,
   onSearchChange,
-  category,
-  onCategoryChange,
   onAddClick,
   setSidebarOpen
 }: TopBarProps) {

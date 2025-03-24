@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Brain, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import { userSignup } from '@/Api/user';
 
@@ -40,7 +39,6 @@ const SignUp = () => {
       toast.success("Account created successfully! 🎉");
       router.push("/dashboard");
     } catch (error: any) {
-      console.error("Registration failed", error);
       setError(error?.message || "Failed to create account. Please try again.");
       toast.error("Registration failed. Please try again.");
     } finally {

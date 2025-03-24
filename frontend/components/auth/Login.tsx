@@ -20,8 +20,8 @@ export default function Login() {
   const { login } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError("");
     setIsLoading(true);
     
@@ -61,6 +61,7 @@ export default function Login() {
             <CardTitle className="text-2xl">Sign In</CardTitle>
             <CardDescription>
               Enter your credentials to access your second brain
+              It&apos;s a great day!
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -140,7 +141,7 @@ export default function Login() {
           </CardContent>
           <CardFooter className="justify-center">
             <div className="text-sm text-foreground/70">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/signup" className="text-primary hover:underline">
                 Sign up
               </Link>
