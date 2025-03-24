@@ -218,30 +218,48 @@ export const get = async (data: any, user: any) => {
     // Get initial results based on vector similarity
     const initialResults = await prisma.$queryRaw`
       SELECT 
-        "id", 
-        "summary",
-        "contentText",
-        "createdAt",
-        "isArchived",
-        "metadata",
-        "title",
-        "url",
-        "summary", 
-        1 - ("embedding" <=> ${arrayLiteral}::vector(384)) AS similarity
-      FROM "Content"
-      WHERE "embedding" IS NOT NULL 
-      AND "userId" = ${user?.id} 
-      AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.3
+        c."id", 
+        c."summary",
+        c."contentText",
+        c."createdAt",
+        c."isArchived",
+        c."metadata",
+        c."title",
+        c."url",
+        c."summary", 
+        1 - (c."embedding" <=> ${arrayLiteral}::vector(384)) AS similarity
+      FROM "Content" c
+      WHERE c."embedding" IS NOT NULL 
+      AND c."userId" = ${user?.id} 
+      AND 1 - (c."embedding" <=> ${arrayLiteral}::vector(384)) > 0.3
       ORDER BY similarity DESC
       LIMIT 10
     `;
-
+    
+    // Process results with Gemini
     const enhancedResults = await analyzeSearchResultsWithGemini(
       searchQuery, 
       Array.isArray(initialResults) ? initialResults : []
     );
     
-    return enhancedResults;
+    // Fetch tags for each content item
+    const resultsWithTags = await Promise.all(
+      enhancedResults.map(async (content) => {
+        const contentTags = await prisma.contentTag.findMany({
+          where: { contentId: content.id },
+          include: { tag: true }
+        });
+        
+        // Extract just the tag names
+        const tags = contentTags.map(ct => ct.tag.name);
+        return {
+          ...content,
+          tags
+        };
+      })
+    );
+    
+    return resultsWithTags;
   } catch (error) {
     console.error("Error in get content service:", error);
     throw error;
@@ -250,7 +268,7 @@ export const get = async (data: any, user: any) => {
 
 export const getWithPagination = async (
   query: { page: string; limit: string },
-  id: any
+  userId: string
 ) => {
   try {
     const { page = 1, limit = 10 } = query;
@@ -258,24 +276,39 @@ export const getWithPagination = async (
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
+    // Fetch content with tags included
     const posts = await prisma.content.findMany({
-      where: { userId:id },
+      where: { userId },
+      include: {
+        tags: {
+          include: {
+            tag: true
+          }
+        }
+      },
       skip,
       take,
       orderBy: { createdAt: "desc" },
     });
 
-    const totalPosts = await prisma.content.count({ where: { id } });
+    // Format the posts to include tags as a simple array of names
+    const formattedPosts = posts.map(post => ({
+      ...post,
+      tags: post.tags.map(contentTag => contentTag.tag.name)
+    }));
+
+    // Get total count for pagination
+    const totalPosts = await prisma.content.count({ where: { userId } });
 
     return {
-      posts,
+      posts: formattedPosts,
       page: Number(page),
       limit: Number(limit),
-      totalPages: Math.ceil(totalPosts / take),
+      totalPages: Math.ceil(totalPosts / Number(limit)),
     };
   } catch (error) {
-    console.log('error while get content process -->' , error)
-    throw error
+    console.log('error while get content process -->', error);
+    throw error;
   }
 };
 
