@@ -13,6 +13,10 @@ app.use(cors());
 
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Hello Worldf from y2b backend");
+});
+
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/content", contentRoute);
 app.use("/api/v1/tag", tagRoute);
