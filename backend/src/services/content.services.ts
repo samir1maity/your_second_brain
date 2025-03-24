@@ -7,7 +7,62 @@ import { formatArrayAsVectorString } from "../utils/formatArrayAsVectorString.js
 import { v4 as uuidv4 } from "uuid";
 import { handleTags } from "./tag.services.js";
 import { AppError } from "../utils/errors.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 // import { AppError } from "../utils/appError.js";
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+// Function to analyze search results with Gemini
+async function analyzeSearchResultsWithGemini(searchQuery: string, results: any[]) {
+  try {
+    if (!results || results.length === 0) return [];
+    
+    // Format the results for Gemini
+    const formattedResults = results.map((item, index) => {
+      return `Result ${index + 1}:
+        Title: ${item.title}
+        Content: ${item.contentText?.substring(0, 300)}...
+        Similarity Score: ${item.similarity}`;
+            }).join('\n\n');
+            
+            // Create the prompt for Gemini
+            const prompt = `
+        I have a search query: "${searchQuery}"
+
+        And these are the search results with their vector similarity scores:
+        ${formattedResults}
+
+        Please analyze these results and determine which ones are most relevant to the search query.
+        Return a JSON array of indices (starting from 0) of the most relevant results, ordered by relevance.
+        Only include results that are truly relevant to the query.
+        Format your response as a valid JSON array like [0, 3, 1] with no other text.`;
+
+    // Get response from Gemini
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+    
+    // Parse the JSON response
+    try {
+      const relevantIndices = JSON.parse(text);
+      if (Array.isArray(relevantIndices)) {
+        // Return the filtered and reordered results
+        return relevantIndices.map(index => results[index]).filter(Boolean);
+      }
+    } catch (parseError) {
+      console.error("Error parsing Gemini response:", parseError);
+    }
+    
+    // Fallback to original results if parsing fails
+    return results;
+  } catch (error) {
+    console.error("Error analyzing results with Gemini:", error);
+    // Fallback to original results
+    return results;
+  }
+}
 
 export const post = async (data: any, user: any) => {
   try {
@@ -141,9 +196,12 @@ export const get = async (data: any, user: any) => {
   try {
     const { searchQuery } = data;
 
+    // Get vector embedding for the search query
     const embedding = await getEmbedding(searchQuery);
     const arrayLiteral = formatArrayAsVectorString(embedding);
-    const results = await prisma.$queryRaw`
+    
+    // Get initial results based on vector similarity
+    const initialResults = await prisma.$queryRaw`
       SELECT 
         "id", 
         "summary",
@@ -158,12 +216,20 @@ export const get = async (data: any, user: any) => {
       FROM "Content"
       WHERE "embedding" IS NOT NULL 
       AND "userId" = ${user?.id} 
-        AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.6
+      AND 1 - ("embedding" <=> ${arrayLiteral}::vector(384)) > 0.3
       ORDER BY similarity DESC
-      LIMIT 5
+      LIMIT 10
     `;
-    return results;
+    
+    // Use Gemini to analyze and rerank the results
+    const enhancedResults = await analyzeSearchResultsWithGemini(
+      searchQuery, 
+      Array.isArray(initialResults) ? initialResults : []
+    );
+    
+    return enhancedResults;
   } catch (error) {
+    console.error("Error in get content service:", error);
     throw error;
   }
 };
